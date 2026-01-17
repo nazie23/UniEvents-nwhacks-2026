@@ -182,16 +182,14 @@ export default function Home() {
                             </Dropdown>
                         ) : (
                             <>
-                                <Link href="/login" passHref legacyBehavior>
-                                    <Button
-                                        variant="outline-info"
-                                        className="me-2"
-                                    >
-                                        Login
-                                    </Button>
+                                <Link
+                                    href="/login"
+                                    className="btn btn-outline-info me-2"
+                                >
+                                    Login
                                 </Link>
-                                <Link href="/signup" passHref legacyBehavior>
-                                    <Button variant="info">Sign Up</Button>
+                                <Link href="/signup" className="btn btn-info">
+                                    Sign Up
                                 </Link>
                             </>
                         )}
