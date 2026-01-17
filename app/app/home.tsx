@@ -11,7 +11,11 @@ import {
     Navbar,
     Modal,
     Badge,
+    Dropdown,
 } from "react-bootstrap";
+import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
+import { useEffect } from "react";
 
 // Mock data for events
 const INITIAL_EVENTS = [
@@ -72,6 +76,31 @@ export default function Home() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [showModal, setShowModal] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const getUser = async () => {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        getUser();
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        window.location.reload();
+    };
 
     const handleCategoryChange = (category: string) => {
         setSelectedCategories((prev) =>
@@ -119,10 +148,53 @@ export default function Home() {
                         id="basic-navbar-nav"
                         className="justify-content-end"
                     >
-                        <Button variant="outline-info" className="me-2">
-                            Login
-                        </Button>
-                        <Button variant="info">Sign Up</Button>
+                        {user ? (
+                            <Dropdown align="end">
+                                <Dropdown.Toggle
+                                    variant="outline-info"
+                                    id="dropdown-user"
+                                    className="d-flex align-items-center"
+                                >
+                                    <div
+                                        className="me-2 rounded-circle bg-info d-flex align-items-center justify-content-center text-white"
+                                        style={{
+                                            width: "30px",
+                                            height: "30px",
+                                            fontSize: "12px",
+                                        }}
+                                    >
+                                        {user.email?.[0].toUpperCase()}
+                                    </div>
+                                    {user.email?.split("@")[0]}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item href="#/profile">
+                                        Profile
+                                    </Dropdown.Item>
+                                    <Dropdown.Item href="#/settings">
+                                        Settings
+                                    </Dropdown.Item>
+                                    <Dropdown.Divider />
+                                    <Dropdown.Item onClick={handleLogout}>
+                                        Logout
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        ) : (
+                            <>
+                                <Link href="/login" passHref legacyBehavior>
+                                    <Button
+                                        variant="outline-info"
+                                        className="me-2"
+                                    >
+                                        Login
+                                    </Button>
+                                </Link>
+                                <Link href="/signup" passHref legacyBehavior>
+                                    <Button variant="info">Sign Up</Button>
+                                </Link>
+                            </>
+                        )}
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
@@ -309,7 +381,7 @@ export default function Home() {
                                     <p className="m-0 text-muted small">
                                         Standard Ticket
                                     </p>
-                                    <h4 className="fw-bold m-0">$49.00</h4>
+                                    <h4 className="fw-bold m-0">FREE</h4>
                                 </div>
                                 <Button
                                     variant="info"
