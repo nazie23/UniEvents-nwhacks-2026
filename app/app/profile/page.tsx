@@ -48,6 +48,16 @@ export default function ProfilePage() {
             }
             setUser(user);
 
+            if (user.created_at) {
+                setCreatedAt(
+                    new Date(user.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                    })
+                );
+            }
+
             // Fetch profile data from Supabase
             const { data, error } = await supabase
                 .from("profiles")
@@ -66,15 +76,6 @@ export default function ProfilePage() {
                     age: data.age?.toString() || "",
                     dietary_restrictions: data.dietary_restrictions || "",
                 });
-                if (data.created_at) {
-                    setCreatedAt(
-                        new Date(data.created_at).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                        })
-                    );
-                }
             }
             setLoading(false);
         };
