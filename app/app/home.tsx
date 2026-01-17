@@ -168,7 +168,7 @@ export default function Home() {
                                     {user.email?.split("@")[0]}
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
-                                    <Dropdown.Item href="#/profile">
+                                    <Dropdown.Item as={Link} href="/profile">
                                         Profile
                                     </Dropdown.Item>
                                     <Dropdown.Item href="#/settings">
