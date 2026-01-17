@@ -20,6 +20,7 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [user, setUser] = useState<any>(null);
+    const [createdAt, setCreatedAt] = useState<string | null>(null);
     const [message, setMessage] = useState<{
         type: "success" | "danger";
         text: string;
@@ -47,8 +48,34 @@ export default function ProfilePage() {
             }
             setUser(user);
 
-            // In a real app, we would fetch the profile from a 'profiles' table here
-            // For now, we'll just initialize with defaults or mock data
+            // Fetch profile data from Supabase
+            const { data, error } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", user.id)
+                .single();
+
+            if (error && error.code !== "PGRST116") {
+                // PGRST116 is 'no rows returned'
+                setMessage({ type: "danger", text: error.message });
+            } else if (data) {
+                setProfile({
+                    first_name: data.first_name || "",
+                    last_name: data.last_name || "",
+                    student_number: data.student_number || "",
+                    age: data.age?.toString() || "",
+                    dietary_restrictions: data.dietary_restrictions || "",
+                });
+                if (data.created_at) {
+                    setCreatedAt(
+                        new Date(data.created_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        })
+                    );
+                }
+            }
             setLoading(false);
         };
         checkUser();
@@ -64,32 +91,27 @@ export default function ProfilePage() {
         setSaving(true);
         setMessage(null);
 
-        // Simulate API call
-        setTimeout(() => {
-            setSaving(false);
+        try {
+            const { error } = await supabase.from("profiles").upsert({
+                id: user.id,
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                student_number: profile.student_number,
+                age: profile.age ? parseInt(profile.age, 10) : null,
+                dietary_restrictions: profile.dietary_restrictions,
+                updated_at: new Date().toISOString(),
+            });
+
+            if (error) throw error;
             setMessage({
                 type: "success",
                 text: "Profile updated successfully!",
             });
-        }, 1000);
-
-        /* 
-        // Real implementation would look like this:
-        const { error } = await supabase
-            .from('profiles')
-            .upsert({ 
-                id: user.id,
-                ...profile,
-                updated_at: new Date()
-            });
-            
-        if (error) {
-            setMessage({ type: 'danger', text: error.message });
-        } else {
-            setMessage({ type: 'success', text: 'Profile updated successfully!' });
+        } catch (error: any) {
+            setMessage({ type: "danger", text: error.message });
+        } finally {
+            setSaving(false);
         }
-        setSaving(false);
-        */
     };
 
     if (loading) {
@@ -136,6 +158,11 @@ export default function ProfilePage() {
                                     <h2 className="fw-bold mb-0">My Profile</h2>
                                     <p className="text-muted mb-0">
                                         {user?.email}
+                                        {createdAt && (
+                                            <span className="small d-block opacity-50">
+                                                Member since {createdAt}
+                                            </span>
+                                        )}
                                     </p>
                                 </div>
                             </div>
@@ -196,7 +223,6 @@ export default function ProfilePage() {
                                         onChange={handleChange}
                                         placeholder="Enter your age"
                                         className="py-2 bg-light border-0"
-                                        required
                                     />
                                 </Form.Group>
 
