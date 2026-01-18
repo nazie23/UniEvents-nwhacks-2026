@@ -39,15 +39,20 @@ export default function AuthPage({
 
         try {
             if (view === "signup") {
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
-                        emailRedirectTo: `${window.location.origin}/auth/callback`,
+                        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`,
                     },
                 });
                 if (error) throw error;
-                setMessage("Check your email for the confirmation link!");
+
+                if (data.session) {
+                    window.location.href = redirectPath;
+                } else {
+                    setMessage("Check your email for the confirmation link!");
+                }
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
                     email,
@@ -171,8 +176,8 @@ export default function AuthPage({
                                     {loading
                                         ? "Processing..."
                                         : view === "login"
-                                        ? "Sign In"
-                                        : "Create Account"}
+                                            ? "Sign In"
+                                            : "Create Account"}
                                 </Button>
                             </Form>
 
@@ -205,8 +210,8 @@ export default function AuthPage({
                                                     ? "/admin/signup"
                                                     : "/signup"
                                                 : isAdmin
-                                                ? "/admin/login"
-                                                : "/login"
+                                                    ? "/admin/login"
+                                                    : "/login"
                                         }
                                         className="text-info fw-bold text-decoration-none"
                                     >

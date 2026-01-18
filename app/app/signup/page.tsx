@@ -1,5 +1,5 @@
 import AuthPage from "@/components/AuthPage";
 
 export default function SignupPage() {
-    return <AuthPage view="signup" />;
+    return <AuthPage view="signup" redirectPath="/?welcome=true" />;
 }
