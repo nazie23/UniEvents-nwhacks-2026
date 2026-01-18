@@ -289,9 +289,13 @@ export default function AdminDashboard() {
         fetchAttendees(event.id);
     };
 
-    const filteredEvents = events.filter((e) =>
-        showArchived ? true : !e.is_archived
-    );
+    const filteredEvents = events
+        .filter((e) => (showArchived ? true : !e.is_archived))
+        .sort(
+            (a, b) =>
+                new Date(a.start_datetime).getTime() -
+                new Date(b.start_datetime).getTime()
+        );
 
     if (loading)
         return (

@@ -95,10 +95,16 @@ export default function SignupsPage() {
     };
 
     const now = new Date();
-    const filteredEvents = events.filter((e) => {
-        const isExpired = new Date(e.end_datetime) < now;
-        return showExpired ? isExpired : !isExpired;
-    });
+    const filteredEvents = events
+        .filter((e) => {
+            const isExpired = new Date(e.end_datetime) < now;
+            return showExpired ? isExpired : !isExpired;
+        })
+        .sort(
+            (a, b) =>
+                new Date(a.start_datetime).getTime() -
+                new Date(b.start_datetime).getTime()
+        );
 
     const formatDateTime = (isoString: string) => {
         return new Date(isoString).toLocaleString("en-US", {

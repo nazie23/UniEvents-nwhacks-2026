@@ -258,8 +258,9 @@ export default function Home() {
             console.error("Error saving interests:", error);
             setMessage({
                 type: "danger",
-                text: `Failed to save interests: ${error?.message || "Unknown error"
-                    }`,
+                text: `Failed to save interests: ${
+                    error?.message || "Unknown error"
+                }`,
             });
         } finally {
             setInterestSaving(false);
@@ -274,6 +275,9 @@ export default function Home() {
 
     const filteredEvents = events
         .filter((event) => {
+            const now = new Date();
+            const isExpired = new Date(event.end_datetime) < now;
+
             const matchesSchool = event.school === selectedSchool;
             const matchesSearch =
                 event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -286,33 +290,35 @@ export default function Home() {
             const matchesTags =
                 selectedTags.length === 0 ||
                 selectedTags.every((tag) => event.tags?.includes(tag));
-
             return (
-                matchesSchool && matchesSearch && matchesCategory && matchesTags
+                !isExpired &&
+                matchesSchool &&
+                matchesSearch &&
+                matchesCategory &&
+                matchesTags
             );
         })
-        .sort((a, b) => {
-            return (
+        .sort(
+            (a, b) =>
                 new Date(a.start_datetime).getTime() -
                 new Date(b.start_datetime).getTime()
-            );
-        });
+        );
 
     const hasInterests = profile?.interests && profile.interests.length > 0;
 
     const suggestedEvents = hasInterests
         ? filteredEvents.filter((event) =>
-            event.tags?.some((tag: string) => profile.interests.includes(tag))
-        )
+              event.tags?.some((tag: string) => profile.interests.includes(tag))
+          )
         : [];
 
     const otherEvents = hasInterests
         ? filteredEvents.filter(
-            (event) =>
-                !event.tags?.some((tag: string) =>
-                    profile.interests.includes(tag)
-                )
-        )
+              (event) =>
+                  !event.tags?.some((tag: string) =>
+                      profile.interests.includes(tag)
+                  )
+          )
         : filteredEvents;
 
     const formatDateTime = (isoString: string) => {
@@ -326,6 +332,11 @@ export default function Home() {
     };
 
     const renderEventCard = (event: any) => {
+        const now = new Date();
+        const isHappening =
+            new Date(event.start_datetime) <= now &&
+            new Date(event.end_datetime) > now;
+
         const isUserSignedUp = event.signups.some(
             (s: any) => s.user_id === user?.id
         );
@@ -414,38 +425,61 @@ export default function Home() {
                                 </span>
                             ))}
                         </div>
-                        <div className="d-flex justify-content-between align-items-center mt-auto">
-                            {isUserSignedUp ? (
-                                <Badge
-                                    bg={
-                                        userStatus === "confirmed"
-                                            ? "success"
-                                            : "warning"
-                                    }
-                                    className="py-2 px-3 rounded-pill d-flex align-items-center"
+                        <div className="mt-auto">
+                            <div className="d-flex justify-content-between align-items-center">
+                                {isUserSignedUp ? (
+                                    <Badge
+                                        bg={
+                                            userStatus === "confirmed"
+                                                ? "success"
+                                                : "warning"
+                                        }
+                                        className="py-2 px-3 rounded-pill d-flex align-items-center"
+                                    >
+                                        <CheckCircle2
+                                            size={14}
+                                            className="me-1"
+                                        />
+                                        {userStatus === "confirmed"
+                                            ? "Registered"
+                                            : "Waitlisted"}
+                                    </Badge>
+                                ) : (
+                                    <span className="text-muted small d-flex align-items-center">
+                                        <Users size={14} className="me-1" />
+                                        {confirmedCount}/{event.capacity}
+                                        {waitlistCount > 0 ? (
+                                            <span className="ms-2 text-warning fw-medium">
+                                                (Wait: {waitlistCount})
+                                            </span>
+                                        ) : confirmedCount >= event.capacity ? (
+                                            <span className="ms-2 text-warning fw-medium">
+                                                Waitlist Open
+                                            </span>
+                                        ) : null}
+                                    </span>
+                                )}
+                                <span
+                                    className="text-muted small d-flex align-items-center ms-auto"
+                                    style={{
+                                        fontSize: "0.75rem",
+                                    }}
                                 >
-                                    <CheckCircle2
-                                        size={14}
-                                        className="me-1"
-                                    />
-                                    {userStatus === "confirmed"
-                                        ? "Registered"
-                                        : "Waitlisted"}
-                                </Badge>
-                            ) : (
-                                <span className="text-muted small d-flex align-items-center">
-                                    <Users size={14} className="me-1" />
-                                    {confirmedCount}/{event.capacity}
-                                    {waitlistCount > 0 ? (
-                                        <span className="ms-2 text-warning fw-medium">
-                                            (Wait: {waitlistCount})
-                                        </span>
-                                    ) : confirmedCount >= event.capacity ? (
-                                        <span className="ms-2 text-warning fw-medium">
-                                            Waitlist Open
-                                        </span>
-                                    ) : null}
+                                    Details
+                                    <ChevronRight size={12} className="ms-1" />
                                 </span>
+                            </div>
+                            {isHappening && (
+                                <div className="mt-1">
+                                    <span
+                                        className="text-muted fw-medium"
+                                        style={{
+                                            fontSize: "0.75rem",
+                                        }}
+                                    >
+                                        Happening
+                                    </span>
+                                </div>
                             )}
                         </div>
                     </Card.Body>
@@ -644,15 +678,15 @@ export default function Home() {
                                 {(searchTerm ||
                                     selectedCategories.length > 0 ||
                                     selectedTags.length > 0) && (
-                                        <Button
-                                            variant="link"
-                                            className="p-0 text-muted small text-decoration-none d-flex align-items-center"
-                                            onClick={handleClearFilters}
-                                        >
-                                            <RotateCcw size={14} className="me-1" />{" "}
-                                            Clear All
-                                        </Button>
-                                    )}
+                                    <Button
+                                        variant="link"
+                                        className="p-0 text-muted small text-decoration-none d-flex align-items-center"
+                                        onClick={handleClearFilters}
+                                    >
+                                        <RotateCcw size={14} className="me-1" />{" "}
+                                        Clear All
+                                    </Button>
+                                )}
                             </div>
 
                             <div className="mb-4">
@@ -673,8 +707,8 @@ export default function Home() {
                                             setSelectedCategories((prev) =>
                                                 prev.includes(cat)
                                                     ? prev.filter(
-                                                        (c) => c !== cat
-                                                    )
+                                                          (c) => c !== cat
+                                                      )
                                                     : [...prev, cat]
                                             )
                                         }
@@ -695,10 +729,11 @@ export default function Home() {
                                                     ? "info"
                                                     : "light"
                                             }
-                                            className={`py-1.5 px-2.5 rounded-pill cursor-pointer border ${selectedTags.includes(tag)
-                                                ? "text-white"
-                                                : "text-muted"
-                                                }`}
+                                            className={`py-1.5 px-2.5 rounded-pill cursor-pointer border ${
+                                                selectedTags.includes(tag)
+                                                    ? "text-white"
+                                                    : "text-muted"
+                                            }`}
                                             style={{
                                                 cursor: "pointer",
                                                 fontSize: "0.75rem",
@@ -707,8 +742,8 @@ export default function Home() {
                                                 setSelectedTags((prev) =>
                                                     prev.includes(tag)
                                                         ? prev.filter(
-                                                            (t) => t !== tag
-                                                        )
+                                                              (t) => t !== tag
+                                                          )
                                                         : [...prev, tag]
                                                 )
                                             }
@@ -861,13 +896,13 @@ export default function Home() {
                                             {message.text.includes(
                                                 "required profile info"
                                             ) && (
-                                                    <Link
-                                                        href="/profile"
-                                                        className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
-                                                    >
-                                                        Update Profile
-                                                    </Link>
-                                                )}
+                                                <Link
+                                                    href="/profile"
+                                                    className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
+                                                >
+                                                    Update Profile
+                                                </Link>
+                                            )}
                                         </Alert>
                                     )}
 
@@ -917,11 +952,11 @@ export default function Home() {
                                                         size="sm"
                                                     />
                                                 ) : selectedEvent.signups.filter(
-                                                    (s: any) =>
-                                                        s.status ===
-                                                        "confirmed"
-                                                ).length <
-                                                    selectedEvent.capacity ? (
+                                                      (s: any) =>
+                                                          s.status ===
+                                                          "confirmed"
+                                                  ).length <
+                                                  selectedEvent.capacity ? (
                                                     "Signup Now"
                                                 ) : (
                                                     "Join Waitlist"
@@ -964,10 +999,11 @@ export default function Home() {
                                         ? "info"
                                         : "light"
                                 }
-                                className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${interestTags.includes(tag)
-                                    ? "text-white"
-                                    : "text-muted"
-                                    }`}
+                                className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${
+                                    interestTags.includes(tag)
+                                        ? "text-white"
+                                        : "text-muted"
+                                }`}
                                 style={{ cursor: "pointer", fontSize: "1rem" }}
                                 onClick={() =>
                                     setInterestTags((prev) =>
