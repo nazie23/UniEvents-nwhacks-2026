@@ -1,6 +1,8 @@
 # UniEvents (nwHacks 2026 Project)
 ## easily discover club events for you!
 
+[link to our project!](https://unievents-delta.vercel.app/)
+
 ### what’s the problem with how we currently find events?
 - we love going to events at UBC! unfortunately, it’s not always easy to discover the events that are relevant to our interests
 - it’s a common experience to discover an event you wanted to go to right after it ended…
@@ -30,5 +32,7 @@ TypeScript (React.js), CSS, Supabase
 
 ## instructions for running the project
 `cd app`
+
 `npm install`
+
 `npm run dev`
