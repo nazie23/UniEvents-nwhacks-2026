@@ -27,3 +27,8 @@ TypeScript (React.js), CSS, Supabase
   - our goal is to have all UBC clubs participating in our website
 - produce an adjacent mobile app with all the same features as our website
 - post-successful launch with UBC, pitch to other universities in BC (SFU, UVic, BCIT)
+
+## instructions for running the project
+`cd app`
+`npm install`
+`npm run dev`
