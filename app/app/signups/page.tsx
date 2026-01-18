@@ -291,8 +291,10 @@ export default function SignupsPage() {
                                             {event.location}
                                         </div>
                                         {/* if event is happening */}
-                                        {new Date(event.start_datetime) <= new Date() &&
-                                            new Date(event.end_datetime) >= new Date() && (
+                                        {new Date(event.start_datetime) <=
+                                            new Date() &&
+                                            new Date(event.end_datetime) >=
+                                                new Date() && (
                                                 <div className="mt-1">
                                                     <span
                                                         className="text-muted fw-medium"
@@ -418,18 +420,19 @@ export default function SignupsPage() {
                                 </div>
                             </div>
                             <div className="d-grid">
-                                <Button
-                                    variant="outline-danger"
-                                    onClick={() => {
-                                        // Normally handle cancellation here, but let's keep it simple as requested
-                                        alert(
-                                            "To cancel, please go to the event page on the home screen."
-                                        );
-                                    }}
-                                    className="rounded-pill"
+                                <Link
+                                    href={`/?event=${selectedEvent.id}`}
+                                    className="text-decoration-none"
                                 >
-                                    Manage Registration
-                                </Button>
+                                    <div className="d-grid">
+                                        <Button
+                                            variant="outline-info"
+                                            className="rounded-pill py-2 fw-bold"
+                                        >
+                                            Manage Registration
+                                        </Button>
+                                    </div>
+                                </Link>
                             </div>
                         </Modal.Body>
                     </>
