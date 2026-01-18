@@ -156,7 +156,7 @@ export default function Home() {
             }
         } else {
             setMessage({
-                type: "success",
+                type: status === "confirmed" ? "success" : "warning",
                 text:
                     status === "confirmed"
                         ? "Registration successful!"
@@ -508,6 +508,12 @@ export default function Home() {
                                 const isUserSignedUp = event.signups.some(
                                     (s: any) => s.user_id === user?.id
                                 );
+                                const confirmedCount = event.signups.filter(
+                                    (s: any) => s.status === "confirmed"
+                                ).length;
+                                const waitlistCount = event.signups.filter(
+                                    (s: any) => s.status === "waitlisted"
+                                ).length;
                                 const userStatus = event.signups.find(
                                     (s: any) => s.user_id === user?.id
                                 )?.status;
@@ -623,26 +629,26 @@ export default function Home() {
                                                                 size={14}
                                                                 className="me-1"
                                                             />
-                                                            {
-                                                                event.signups.filter(
-                                                                    (s: any) =>
-                                                                        s.status ===
-                                                                        "confirmed"
-                                                                ).length
-                                                            }
-                                                            /{event.capacity}{" "}
-                                                            spots
+                                                            {confirmedCount}/
+                                                            {event.capacity}
+                                                            {waitlistCount >
+                                                            0 ? (
+                                                                <span className="ms-2 text-warning fw-medium">
+                                                                    (Wait:{" "}
+                                                                    {
+                                                                        waitlistCount
+                                                                    }
+                                                                    )
+                                                                </span>
+                                                            ) : confirmedCount >=
+                                                              event.capacity ? (
+                                                                <span className="ms-2 text-warning fw-medium">
+                                                                    Waitlist
+                                                                    Open
+                                                                </span>
+                                                            ) : null}
                                                         </span>
                                                     )}
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-info p-0 d-flex align-items-center text-decoration-none fw-bold small"
-                                                    >
-                                                        Details{" "}
-                                                        <ChevronRight
-                                                            size={16}
-                                                        />
-                                                    </Button>
                                                 </div>
                                             </Card.Body>
                                         </Card>
