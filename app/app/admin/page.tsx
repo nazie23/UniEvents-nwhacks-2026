@@ -407,7 +407,7 @@ export default function AdminDashboard() {
 
                 <Row>
                     {filteredEvents.map((event) => (
-                        <Col key={event.id} lg={4} md={6} className="mb-4">
+                        <Col key={event.id} lg={3} md={6} className="mb-4">
                             <Card
                                 className="h-100 border-0 shadow-sm rounded-4 overflow-hidden"
                                 onClick={() => openEventDetails(event)}
@@ -415,7 +415,7 @@ export default function AdminDashboard() {
                             >
                                 <div
                                     style={{
-                                        height: "180px",
+                                        height: "160px",
                                         position: "relative",
                                     }}
                                 >
@@ -435,7 +435,7 @@ export default function AdminDashboard() {
                                         )}
                                     </div>
                                 </div>
-                                <Card.Body className="p-4">
+                                <Card.Body className="p-2">
                                     <div className="d-flex justify-content-between align-items-start mb-2">
                                         <Badge bg="info" className="mb-2">
                                             {event.category}
@@ -452,10 +452,13 @@ export default function AdminDashboard() {
                                             )}
                                         </div>
                                     </div>
-                                    <Card.Title className="fw-bold">
+                                    <h6 className="fw-bold mb-1 text-truncate">
                                         {event.name}
-                                    </Card.Title>
-                                    <div className="text-muted small mb-3">
+                                    </h6>
+                                    <div
+                                        className="text-muted small mb-2"
+                                        style={{ fontSize: "0.8rem" }}
+                                    >
                                         <div className="d-flex align-items-center mb-1">
                                             <Calendar
                                                 size={14}
