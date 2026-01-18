@@ -162,6 +162,49 @@ export default function Home() {
                         : "Event is full. You've been added to the waitlist.",
             });
             fetchEvents();
+            // Also update selectedEvent signups locally
+            if (selectedEvent && selectedEvent.id === event.id) {
+                setSelectedEvent({
+                    ...selectedEvent,
+                    signups: [
+                        ...selectedEvent.signups,
+                        { user_id: user.id, status: status },
+                    ],
+                });
+            }
+        }
+        setSignupLoading(false);
+    };
+
+    const handleCancelSignup = async (event: any) => {
+        if (!user) return;
+
+        setSignupLoading(true);
+        setMessage(null);
+
+        const { error } = await supabase
+            .from("signups")
+            .delete()
+            .eq("event_id", event.id)
+            .eq("user_id", user.id);
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            setMessage({
+                type: "success",
+                text: "Your registration has been cancelled.",
+            });
+            fetchEvents();
+            // Also update selectedEvent signups locally
+            if (selectedEvent && selectedEvent.id === event.id) {
+                setSelectedEvent({
+                    ...selectedEvent,
+                    signups: selectedEvent.signups.filter(
+                        (s: any) => s.user_id !== user.id
+                    ),
+                });
+            }
         }
         setSignupLoading(false);
     };
@@ -681,11 +724,23 @@ export default function Home() {
                                             (s: any) => s.user_id === user?.id
                                         ) ? (
                                             <Button
-                                                variant="success"
+                                                variant="outline-danger"
                                                 className="py-3 fw-bold rounded-4 shadow-sm"
-                                                disabled
+                                                onClick={() =>
+                                                    handleCancelSignup(
+                                                        selectedEvent
+                                                    )
+                                                }
+                                                disabled={signupLoading}
                                             >
-                                                Already Registered
+                                                {signupLoading ? (
+                                                    <Spinner
+                                                        animation="border"
+                                                        size="sm"
+                                                    />
+                                                ) : (
+                                                    "Cancel Signup"
+                                                )}
                                             </Button>
                                         ) : selectedEvent.is_locked ? (
                                             <Button
