@@ -297,13 +297,11 @@ export default function SignupsPage() {
                                     : "You haven't signed up for any upcoming events yet."}
                             </p>
                             {!showExpired && (
-                                <Link href="/" passHref legacyBehavior>
-                                    <Button
-                                        variant="info"
-                                        className="text-white mt-2 rounded-pill px-4 fw-bold shadow-sm"
-                                    >
-                                        Explore Events
-                                    </Button>
+                                <Link
+                                    href="/"
+                                    className="btn btn-info text-white mt-2 rounded-pill px-4 fw-bold shadow-sm"
+                                >
+                                    Explore Events
                                 </Link>
                             )}
                         </Col>
