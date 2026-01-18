@@ -1,0 +1,910 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+    Container,
+    Row,
+    Col,
+    Card,
+    Button,
+    Form,
+    Navbar,
+    Modal,
+    Badge,
+    Dropdown,
+    Spinner,
+    Table,
+    Alert,
+} from "react-bootstrap";
+import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
+import {
+    Users,
+    Lock,
+    Archive,
+    Trash2,
+    ChevronLeft,
+    Calendar,
+    MapPin,
+    Plus,
+    CheckCircle,
+    XCircle,
+    ArrowUpCircle,
+} from "lucide-react";
+
+export default function AdminDashboard() {
+    const [user, setUser] = useState<any>(null);
+    const [events, setEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showArchived, setShowArchived] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<any>(null);
+    const [showDetails, setShowDetails] = useState(false);
+    const [attendees, setAttendees] = useState<any[]>([]);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const [message, setMessage] = useState<{
+        type: string;
+        text: string;
+    } | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [createLoading, setCreateLoading] = useState(false);
+    const [newEvent, setNewEvent] = useState({
+        name: "",
+        category: "Tech",
+        tags: "",
+        location: "",
+        start_datetime: "",
+        end_datetime: "",
+        capacity: 50,
+        description: "",
+    });
+
+    const supabase = createClient();
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = "/admin/login";
+                return;
+            }
+            setUser(user);
+            fetchEvents(user.id);
+        };
+        checkAuth();
+    }, []);
+
+    const fetchEvents = async (userId: string) => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from("events")
+            .select(
+                `
+                *,
+                signups (
+                    status
+                )
+            `
+            )
+            .eq("organizer_id", userId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            // Process counts
+            const processedEvents = data.map((event: any) => ({
+                ...event,
+                confirmedCount: event.signups.filter(
+                    (s: any) => s.status === "confirmed"
+                ).length,
+                waitlistCount: event.signups.filter(
+                    (s: any) => s.status === "waitlisted"
+                ).length,
+            }));
+            setEvents(processedEvents);
+        }
+        setLoading(false);
+    };
+
+    const handleToggleArchive = async (event: any) => {
+        const { error } = await supabase
+            .from("events")
+            .update({ is_archived: !event.is_archived })
+            .eq("id", event.id);
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            fetchEvents(user.id);
+            if (selectedEvent?.id === event.id) {
+                setSelectedEvent({
+                    ...selectedEvent,
+                    is_archived: !event.is_archived,
+                });
+            }
+        }
+    };
+
+    const handleToggleLock = async (event: any) => {
+        const { error } = await supabase
+            .from("events")
+            .update({ is_locked: !event.is_locked })
+            .eq("id", event.id);
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            fetchEvents(user.id);
+            if (selectedEvent?.id === event.id) {
+                setSelectedEvent({
+                    ...selectedEvent,
+                    is_locked: !event.is_locked,
+                });
+            }
+        }
+    };
+
+    const handleDeleteEvent = async (eventId: string) => {
+        if (
+            !confirm(
+                "Are you ABSOLUTELY sure? This will delete all signup data too."
+            )
+        )
+            return;
+        if (!confirm("Final Confirmation: Delete this event?")) return;
+
+        const { error } = await supabase
+            .from("events")
+            .delete()
+            .eq("id", eventId);
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            setShowDetails(false);
+            fetchEvents(user.id);
+            setMessage({
+                type: "success",
+                text: "Event deleted successfully.",
+            });
+        }
+    };
+
+    const handleCreateEvent = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreateLoading(true);
+
+        const { error } = await supabase.from("events").insert({
+            ...newEvent,
+            tags: newEvent.tags
+                .split(",")
+                .map((t) => t.trim())
+                .filter((t) => t),
+            organizer_id: user.id,
+        });
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            setShowCreateModal(false);
+            setNewEvent({
+                name: "",
+                category: "Tech",
+                tags: "",
+                location: "",
+                start_datetime: "",
+                end_datetime: "",
+                capacity: 50,
+                description: "",
+            });
+            fetchEvents(user.id);
+            setMessage({
+                type: "success",
+                text: "Event created successfully!",
+            });
+        }
+        setCreateLoading(false);
+    };
+
+    const fetchAttendees = async (eventId: string) => {
+        setDetailsLoading(true);
+        const { data, error } = await supabase
+            .from("signups")
+            .select(
+                `
+                id,
+                status,
+                created_at,
+                profiles (
+                    first_name,
+                    last_name,
+                    student_number,
+                    age,
+                    dietary_restrictions
+                )
+            `
+            )
+            .eq("event_id", eventId)
+            .order("created_at", { ascending: true });
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            setAttendees(data);
+        }
+        setDetailsLoading(false);
+    };
+
+    const handleUpdateSignupStatus = async (
+        signupId: string,
+        newStatus: string
+    ) => {
+        const { error } = await supabase
+            .from("signups")
+            .update({ status: newStatus })
+            .eq("id", signupId);
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            fetchAttendees(selectedEvent.id);
+            fetchEvents(user.id);
+        }
+    };
+
+    const handleRemoveSignup = async (signupId: string) => {
+        if (!confirm("Remove this user from the list?")) return;
+
+        const { error } = await supabase
+            .from("signups")
+            .delete()
+            .eq("id", signupId);
+
+        if (error) {
+            setMessage({ type: "danger", text: error.message });
+        } else {
+            fetchAttendees(selectedEvent.id);
+            fetchEvents(user.id);
+        }
+    };
+
+    const openEventDetails = (event: any) => {
+        setSelectedEvent(event);
+        setShowDetails(true);
+        fetchAttendees(event.id);
+    };
+
+    const filteredEvents = events.filter((e) =>
+        showArchived ? true : !e.is_archived
+    );
+
+    if (loading)
+        return (
+            <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ minHeight: "100vh" }}
+            >
+                <Spinner animation="border" variant="info" />
+            </div>
+        );
+
+    return (
+        <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+            <Navbar
+                bg="dark"
+                variant="dark"
+                expand="lg"
+                className="mb-4 shadow-sm py-3"
+            >
+                <Container fluid>
+                    <Navbar.Brand href="/" className="fw-bold fs-3">
+                        <span style={{ color: "#0dcaf0" }}>Event</span>Hive{" "}
+                        <Badge bg="info" className="ms-2 fs-6">
+                            Admin
+                        </Badge>
+                    </Navbar.Brand>
+                    <div className="d-flex align-items-center">
+                        <span className="text-white me-3 d-none d-md-inline small opacity-75">
+                            {user?.email}
+                        </span>
+                        <Button
+                            variant="outline-light"
+                            size="sm"
+                            onClick={() => supabase.auth.signOut()}
+                        >
+                            Logout
+                        </Button>
+                    </div>
+                </Container>
+            </Navbar>
+
+            <Container fluid className="px-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 className="fw-bold mb-0">Club Dashboard</h2>
+                        <p className="text-muted mb-0">
+                            Manage your events and attendees
+                        </p>
+                    </div>
+                    <Button
+                        variant="info"
+                        className="text-white fw-bold d-flex align-items-center"
+                        onClick={() => setShowCreateModal(true)}
+                    >
+                        <Plus size={20} className="me-2" /> Create Event
+                    </Button>
+                </div>
+
+                {message && (
+                    <Alert
+                        variant={message.type}
+                        dismissible
+                        onClose={() => setMessage(null)}
+                    >
+                        {message.text}
+                    </Alert>
+                )}
+
+                <Row className="mb-4 align-items-center bg-white p-3 rounded-4 shadow-sm mx-0">
+                    <Col md={6}>
+                        <Form.Check
+                            type="checkbox"
+                            id="show-archived"
+                            label="Show Archived Events"
+                            checked={showArchived}
+                            onChange={(e) => setShowArchived(e.target.checked)}
+                            className="fw-bold text-muted"
+                        />
+                    </Col>
+                </Row>
+
+                <Row>
+                    {filteredEvents.map((event) => (
+                        <Col key={event.id} lg={4} md={6} className="mb-4">
+                            <Card
+                                className="h-100 border-0 shadow-sm rounded-4 overflow-hidden"
+                                onClick={() => openEventDetails(event)}
+                                style={{ cursor: "pointer" }}
+                            >
+                                <div
+                                    style={{
+                                        height: "180px",
+                                        position: "relative",
+                                    }}
+                                >
+                                    <div className="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center text-white opacity-25">
+                                        No Image
+                                    </div>
+                                    <div className="position-absolute top-0 end-0 p-3 d-flex flex-column gap-2">
+                                        {event.is_archived && (
+                                            <Badge bg="secondary">
+                                                Archived
+                                            </Badge>
+                                        )}
+                                        {event.is_locked && (
+                                            <Badge bg="warning" text="dark">
+                                                Locked
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                                <Card.Body className="p-4">
+                                    <div className="d-flex justify-content-between align-items-start mb-2">
+                                        <Badge bg="info" className="mb-2">
+                                            {event.category}
+                                        </Badge>
+                                        <div className="d-flex align-items-center text-muted small">
+                                            <Users size={14} className="me-1" />
+                                            {event.confirmedCount}/
+                                            {event.capacity}
+                                            {event.waitlistCount > 0 && (
+                                                <span className="ms-2 text-warning">
+                                                    (Wait: {event.waitlistCount}
+                                                    )
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <Card.Title className="fw-bold">
+                                        {event.name}
+                                    </Card.Title>
+                                    <div className="text-muted small mb-3">
+                                        <div className="d-flex align-items-center mb-1">
+                                            <Calendar
+                                                size={14}
+                                                className="me-2"
+                                            />
+                                            {new Date(
+                                                event.start_datetime
+                                            ).toLocaleDateString()}
+                                        </div>
+                                        <div className="d-flex align-items-center">
+                                            <MapPin
+                                                size={14}
+                                                className="me-2"
+                                            />
+                                            {event.location}
+                                        </div>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    ))}
+                    {filteredEvents.length === 0 && (
+                        <Col className="text-center py-5">
+                            <Archive
+                                size={48}
+                                className="text-muted opacity-25 mb-3"
+                            />
+                            <h4 className="text-muted">No events found</h4>
+                            <p className="text-muted px-5">
+                                Click 'Create Event' to get started!
+                            </p>
+                        </Col>
+                    )}
+                </Row>
+            </Container>
+
+            {/* Event Details Modal */}
+            <Modal
+                show={showDetails}
+                onHide={() => setShowDetails(false)}
+                size="lg"
+                centered
+                scrollable
+            >
+                {selectedEvent && (
+                    <>
+                        <Modal.Header closeButton className="border-0 pb-0">
+                            <Modal.Title className="fw-bold d-flex align-items-center">
+                                {selectedEvent.name}
+                                {selectedEvent.is_locked && (
+                                    <Badge
+                                        bg="warning"
+                                        text="dark"
+                                        className="ms-2 small"
+                                    >
+                                        Locked
+                                    </Badge>
+                                )}
+                                {selectedEvent.is_archived && (
+                                    <Badge
+                                        bg="secondary"
+                                        className="ms-2 small"
+                                    >
+                                        Archived
+                                    </Badge>
+                                )}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body className="pt-3">
+                            <Row className="mb-4">
+                                <Col md={12}>
+                                    <div className="bg-light p-3 rounded-4 d-flex justify-content-around text-center mb-4">
+                                        <div>
+                                            <div className="small text-muted mb-1">
+                                                Capacity
+                                            </div>
+                                            <div className="fw-bold fs-4">
+                                                {selectedEvent.capacity}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="small text-muted mb-1">
+                                                Signed Up
+                                            </div>
+                                            <div className="fw-bold fs-4 text-info">
+                                                {selectedEvent.confirmedCount}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="small text-muted mb-1">
+                                                Waitlist
+                                            </div>
+                                            <div className="fw-bold fs-4 text-warning">
+                                                {selectedEvent.waitlistCount}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h5 className="fw-bold mb-3 d-flex align-items-center">
+                                        <Users
+                                            size={20}
+                                            className="me-2 text-info"
+                                        />{" "}
+                                        Attendee Management
+                                    </h5>
+
+                                    {detailsLoading ? (
+                                        <div className="text-center py-4">
+                                            <Spinner
+                                                animation="border"
+                                                size="sm"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="table-responsive rounded-4 border">
+                                            <Table hover className="mb-0">
+                                                <thead className="bg-light">
+                                                    <tr>
+                                                        <th className="small fw-bold">
+                                                            User
+                                                        </th>
+                                                        <th className="small fw-bold">
+                                                            Status
+                                                        </th>
+                                                        <th className="small fw-bold">
+                                                            Dietary
+                                                        </th>
+                                                        <th className="small fw-bold text-end">
+                                                            Actions
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {attendees.map((signup) => (
+                                                        <tr
+                                                            key={signup.id}
+                                                            className="align-middle"
+                                                        >
+                                                            <td>
+                                                                <div className="fw-bold">
+                                                                    {
+                                                                        signup
+                                                                            .profiles
+                                                                            .first_name
+                                                                    }{" "}
+                                                                    {
+                                                                        signup
+                                                                            .profiles
+                                                                            .last_name
+                                                                    }
+                                                                </div>
+                                                                <div className="small text-muted">
+                                                                    {signup
+                                                                        .profiles
+                                                                        .student_number ||
+                                                                        "No ID"}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <Badge
+                                                                    bg={
+                                                                        signup.status ===
+                                                                        "confirmed"
+                                                                            ? "success-subtle"
+                                                                            : "warning-subtle"
+                                                                    }
+                                                                    className={
+                                                                        signup.status ===
+                                                                        "confirmed"
+                                                                            ? "text-success"
+                                                                            : "text-warning"
+                                                                    }
+                                                                >
+                                                                    {signup.status.toUpperCase()}
+                                                                </Badge>
+                                                            </td>
+                                                            <td
+                                                                className="small"
+                                                                style={{
+                                                                    maxWidth:
+                                                                        "150px",
+                                                                }}
+                                                            >
+                                                                <span className="text-truncate d-block">
+                                                                    {signup
+                                                                        .profiles
+                                                                        .dietary_restrictions ||
+                                                                        "None"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="text-end">
+                                                                <div className="d-flex justify-content-end gap-1">
+                                                                    {signup.status ===
+                                                                        "waitlisted" &&
+                                                                        selectedEvent.confirmedCount <
+                                                                            selectedEvent.capacity && (
+                                                                            <Button
+                                                                                variant="link"
+                                                                                className="p-1 text-success"
+                                                                                title="Promote to Confirmed"
+                                                                                onClick={() =>
+                                                                                    handleUpdateSignupStatus(
+                                                                                        signup.id,
+                                                                                        "confirmed"
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <ArrowUpCircle
+                                                                                    size={
+                                                                                        18
+                                                                                    }
+                                                                                />
+                                                                            </Button>
+                                                                        )}
+                                                                    <Button
+                                                                        variant="link"
+                                                                        className="p-1 text-danger"
+                                                                        title="Remove"
+                                                                        onClick={() =>
+                                                                            handleRemoveSignup(
+                                                                                signup.id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <XCircle
+                                                                            size={
+                                                                                18
+                                                                            }
+                                                                        />
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {attendees.length === 0 && (
+                                                        <tr>
+                                                            <td
+                                                                colSpan={4}
+                                                                className="text-center py-4 text-muted small"
+                                                            >
+                                                                No signups yet
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </Table>
+                                        </div>
+                                    )}
+                                </Col>
+                            </Row>
+                        </Modal.Body>
+                        <Modal.Footer className="bg-light border-0 py-3 d-flex justify-content-between">
+                            <div className="d-flex gap-2">
+                                <Button
+                                    variant="outline-danger"
+                                    className="d-flex align-items-center"
+                                    onClick={() =>
+                                        handleDeleteEvent(selectedEvent.id)
+                                    }
+                                >
+                                    <Trash2 size={18} className="me-2" /> Delete
+                                </Button>
+                            </div>
+                            <div className="d-flex gap-2">
+                                <Button
+                                    variant={
+                                        selectedEvent.is_locked
+                                            ? "info"
+                                            : "outline-info"
+                                    }
+                                    onClick={() =>
+                                        handleToggleLock(selectedEvent)
+                                    }
+                                >
+                                    <Lock size={18} className="me-2" />{" "}
+                                    {selectedEvent.is_locked
+                                        ? "Unlock"
+                                        : "Lock"}
+                                </Button>
+                                <Button
+                                    variant={
+                                        selectedEvent.is_archived
+                                            ? "secondary"
+                                            : "outline-secondary"
+                                    }
+                                    onClick={() =>
+                                        handleToggleArchive(selectedEvent)
+                                    }
+                                >
+                                    <Archive size={18} className="me-2" />{" "}
+                                    {selectedEvent.is_archived
+                                        ? "Unarchive"
+                                        : "Archive"}
+                                </Button>
+                            </div>
+                        </Modal.Footer>
+                    </>
+                )}
+            </Modal>
+
+            {/* Create Event Modal */}
+            <Modal
+                show={showCreateModal}
+                onHide={() => setShowCreateModal(false)}
+                size="lg"
+                centered
+            >
+                <Modal.Header closeButton className="border-0 pb-0">
+                    <Modal.Title className="fw-bold">
+                        Create New Event
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="pt-3">
+                    <Form onSubmit={handleCreateEvent}>
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="small fw-bold text-muted">
+                                        Event Name
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        required
+                                        value={newEvent.name}
+                                        onChange={(e) =>
+                                            setNewEvent({
+                                                ...newEvent,
+                                                name: e.target.value,
+                                            })
+                                        }
+                                        placeholder="Awesome Hackathon"
+                                        className="py-2 bg-light border-0"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="small fw-bold text-muted">
+                                        Category
+                                    </Form.Label>
+                                    <Form.Select
+                                        value={newEvent.category}
+                                        onChange={(e) =>
+                                            setNewEvent({
+                                                ...newEvent,
+                                                category: e.target.value,
+                                            })
+                                        }
+                                        className="py-2 bg-light border-0"
+                                    >
+                                        <option>Tech</option>
+                                        <option>Music</option>
+                                        <option>Art</option>
+                                        <option>Social</option>
+                                        <option>Workshop</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="small fw-bold text-muted">
+                                        Start Datetime
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="datetime-local"
+                                        required
+                                        value={newEvent.start_datetime}
+                                        onChange={(e) =>
+                                            setNewEvent({
+                                                ...newEvent,
+                                                start_datetime: e.target.value,
+                                            })
+                                        }
+                                        className="py-2 bg-light border-0"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="small fw-bold text-muted">
+                                        End Datetime
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="datetime-local"
+                                        required
+                                        value={newEvent.end_datetime}
+                                        onChange={(e) =>
+                                            setNewEvent({
+                                                ...newEvent,
+                                                end_datetime: e.target.value,
+                                            })
+                                        }
+                                        className="py-2 bg-light border-0"
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="small fw-bold text-muted">
+                                        Location
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        required
+                                        value={newEvent.location}
+                                        onChange={(e) =>
+                                            setNewEvent({
+                                                ...newEvent,
+                                                location: e.target.value,
+                                            })
+                                        }
+                                        placeholder="Room 101, Student Union"
+                                        className="py-2 bg-light border-0"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="small fw-bold text-muted">
+                                        Capacity
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        required
+                                        value={newEvent.capacity}
+                                        onChange={(e) =>
+                                            setNewEvent({
+                                                ...newEvent,
+                                                capacity: parseInt(
+                                                    e.target.value
+                                                ),
+                                            })
+                                        }
+                                        className="py-2 bg-light border-0"
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted">
+                                Tags (comma separated)
+                            </Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={newEvent.tags}
+                                onChange={(e) =>
+                                    setNewEvent({
+                                        ...newEvent,
+                                        tags: e.target.value,
+                                    })
+                                }
+                                placeholder="coding, free-food, networking"
+                                className="py-2 bg-light border-0"
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-4">
+                            <Form.Label className="small fw-bold text-muted">
+                                Description
+                            </Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                value={newEvent.description}
+                                onChange={(e) =>
+                                    setNewEvent({
+                                        ...newEvent,
+                                        description: e.target.value,
+                                    })
+                                }
+                                placeholder="Describe your event..."
+                                className="py-2 bg-light border-0"
+                            />
+                        </Form.Group>
+                        <div className="d-grid mt-4">
+                            <Button
+                                variant="info"
+                                type="submit"
+                                className="py-3 text-white fw-bold shadow-sm rounded-4"
+                                disabled={createLoading}
+                            >
+                                {createLoading ? (
+                                    <Spinner animation="border" size="sm" />
+                                ) : (
+                                    "Publish Event"
+                                )}
+                            </Button>
+                        </div>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+        </div>
+    );
+}

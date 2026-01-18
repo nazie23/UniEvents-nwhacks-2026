@@ -16,8 +16,12 @@ import Link from "next/link";
 
 export default function AuthPage({
     view = "login",
+    isAdmin = false,
+    redirectPath = "/",
 }: {
     view?: "login" | "signup";
+    isAdmin?: boolean;
+    redirectPath?: string;
 }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -50,7 +54,7 @@ export default function AuthPage({
                     password,
                 });
                 if (error) throw error;
-                window.location.href = "/";
+                window.location.href = redirectPath;
             }
         } catch (err: any) {
             setError(err.message);
@@ -197,7 +201,11 @@ export default function AuthPage({
                                     <Link
                                         href={
                                             view === "login"
-                                                ? "/signup"
+                                                ? isAdmin
+                                                    ? "/admin/signup"
+                                                    : "/signup"
+                                                : isAdmin
+                                                ? "/admin/login"
                                                 : "/login"
                                         }
                                         className="text-info fw-bold text-decoration-none"
