@@ -64,13 +64,15 @@ export default function Home() {
     const [headlineIndex, setHeadlineIndex] = useState(0);
 
     useEffect(() => {
-        const t1 = setTimeout(() => setHeadlineIndex(1), 4400);
-        const t2 = setTimeout(() => setHeadlineIndex(2), 4400 + 1800);
-        return () => {
-            clearTimeout(t1);
-            clearTimeout(t2);
-        };
-    }, []);
+        const isLastItem = headlineIndex === headlineSequence.length - 1;
+        const delay = isLastItem ? 3000 : 2000;
+
+        const interval = setInterval(() => {
+            setHeadlineIndex((prev) => (prev + 1) % headlineSequence.length);
+        }, delay);
+
+        return () => clearInterval(interval);
+    }, [headlineIndex]);
 
     const supabase = createClient();
 
