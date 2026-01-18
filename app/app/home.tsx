@@ -520,7 +520,7 @@ export default function Home() {
                 onHide={() => setShowModal(false)}
                 size="lg"
                 centered
-                rounded-4
+                contentClassName="rounded-4"
             >
                 {selectedEvent && (
                     <>
