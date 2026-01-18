@@ -413,9 +413,9 @@ export default function Home() {
             <Container className="mb-5">
                 <Row>
                     {/* Filters */}
-                    <Col lg={3} className="mb-4">
+                    <Col lg={2} className="mb-4">
                         <Card
-                            className="border-0 shadow-sm rounded-4 p-4 sticky-top"
+                            className="border-0 shadow-sm rounded-4 p-3 sticky-top"
                             style={{ top: "100px" }}
                         >
                             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -465,7 +465,7 @@ export default function Home() {
                                 <label className="small fw-bold text-muted mb-2 d-block">
                                     TAGS
                                 </label>
-                                <div className="d-flex flex-wrap gap-2">
+                                <div className="d-flex flex-wrap gap-1">
                                     {allTags.map((tag) => (
                                         <Badge
                                             key={tag}
@@ -474,12 +474,15 @@ export default function Home() {
                                                     ? "info"
                                                     : "light"
                                             }
-                                            className={`py-2 px-3 rounded-pill cursor-pointer border ${
+                                            className={`py-1.5 px-2.5 rounded-pill cursor-pointer border ${
                                                 selectedTags.includes(tag)
                                                     ? "text-white"
                                                     : "text-muted"
                                             }`}
-                                            style={{ cursor: "pointer" }}
+                                            style={{
+                                                cursor: "pointer",
+                                                fontSize: "0.75rem",
+                                            }}
                                             onClick={() =>
                                                 setSelectedTags((prev) =>
                                                     prev.includes(tag)
@@ -490,7 +493,7 @@ export default function Home() {
                                                 )
                                             }
                                         >
-                                            #{tag}
+                                            {tag}
                                         </Badge>
                                     ))}
                                 </div>
@@ -499,7 +502,7 @@ export default function Home() {
                     </Col>
 
                     {/* Event Grid */}
-                    <Col lg={9}>
+                    <Col lg={10}>
                         <Row>
                             {filteredEvents.map((event) => {
                                 const isUserSignedUp = event.signups.some(
@@ -513,7 +516,7 @@ export default function Home() {
                                     <Col
                                         key={event.id}
                                         md={6}
-                                        lg={4}
+                                        lg={3}
                                         className="mb-4"
                                     >
                                         <Card
@@ -551,10 +554,10 @@ export default function Home() {
                                                     </Badge>
                                                 </div>
                                             </div>
-                                            <Card.Body className="p-3">
-                                                <h5 className="fw-bold mb-2 text-truncate">
+                                            <Card.Body className="p-2">
+                                                <h6 className="fw-bold mb-1 text-truncate">
                                                     {event.name}
-                                                </h5>
+                                                </h6>
                                                 <div
                                                     className="text-muted small mb-2"
                                                     style={{
@@ -578,14 +581,18 @@ export default function Home() {
                                                         {event.location}
                                                     </div>
                                                 </div>
-                                                <div className="d-flex flex-wrap gap-1 mb-3">
+                                                <div className="d-flex flex-wrap gap-1 mb-2">
                                                     {event.tags?.map(
                                                         (tag: string) => (
                                                             <span
                                                                 key={tag}
-                                                                className="text-info bg-info-subtle px-2 py-1 rounded small"
+                                                                className="text-info bg-info-subtle px-2 py-0.5 rounded fw-medium"
+                                                                style={{
+                                                                    fontSize:
+                                                                        "0.75rem",
+                                                                }}
                                                             >
-                                                                #{tag}
+                                                                {tag}
                                                             </span>
                                                         )
                                                     )}
