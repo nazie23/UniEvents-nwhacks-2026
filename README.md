@@ -3,6 +3,19 @@
 
 [link to our project!](https://unievents-delta.vercel.app/)
 
+### Abstract
+Discover on-campus club events and manage RSVPs with ease.
+
+This application simplifies the student organization experience by allowing users to sign up for events in one click while giving club leaders powerful tools to manage attendees and waitlists.
+
+Key Features:
+
+- One-Click Registration: Frictionless sign-up process for students.
+
+- Club Dashboards: Create and edit event postings dynamically.
+
+- Smart Waitlists: Automated queue management when events hit capacity.
+
 ### what’s the problem with how we currently find events?
 - we love going to events at UBC! unfortunately, it’s not always easy to discover the events that are relevant to our interests
 - it’s a common experience to discover an event you wanted to go to right after it ended…
