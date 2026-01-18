@@ -37,7 +37,9 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
+    const [schools, setSchools] = useState<any[]>([]);
     const [selectedSchool, setSelectedSchool] = useState<string>("UBC");
+    const [schoolImageLink, setSchoolImageLink] = useState<string>("");
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [showModal, setShowModal] = useState(false);
     const [signupLoading, setSignupLoading] = useState(false);
@@ -62,6 +64,8 @@ export default function Home() {
                     .single();
                 setProfile(data);
             }
+            fetchSchools();
+            fetchSchoolImageLink("UBC");
             fetchEvents();
         };
         init();
@@ -208,6 +212,28 @@ export default function Home() {
             }
         }
         setSignupLoading(false);
+    };
+
+    const fetchSchools = async () => {
+        const { data, error } = await supabase.from("schools").select("*");
+        if (error) {
+            console.error(error);
+        } else {
+            setSchools(data);
+        }
+    };
+
+    const fetchSchoolImageLink = async (schoolName: any) => {
+        const { data, error } = await supabase
+            .from("schools")
+            .select("background_image_url")
+            .eq("name", schoolName)
+            .single();
+        if (error) {
+            console.error(error);
+        } else {
+            setSchoolImageLink(data.background_image_url);
+        }
     };
 
     const handleLogout = async () => {
@@ -520,6 +546,7 @@ export default function Home() {
                             <Dropdown
                                 onSelect={(s: any) => {
                                     setSelectedSchool(s);
+                                    fetchSchoolImageLink(s);
                                     handleClearFilters();
                                 }}
                             >
@@ -535,18 +562,16 @@ export default function Home() {
                                     {selectedSchool}
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu className="border-0 shadow-lg rounded-4 mt-2">
-                                    <Dropdown.Item eventKey="UBC">
-                                        UBC
-                                    </Dropdown.Item>
-                                    <Dropdown.Item eventKey="SFU">
-                                        SFU
-                                    </Dropdown.Item>
-                                    <Dropdown.Item eventKey="UVic">
-                                        UVic
-                                    </Dropdown.Item>
-                                    <Dropdown.Item eventKey="BCIT">
-                                        BCIT
-                                    </Dropdown.Item>
+                                    {schools.map((school: any) => {
+                                        return (
+                                            <Dropdown.Item
+                                                key={school.name}
+                                                eventKey={school.name}
+                                            >
+                                                {school.name}
+                                            </Dropdown.Item>
+                                        );
+                                    })}
                                 </Dropdown.Menu>
                             </Dropdown>
                         </div>
@@ -629,11 +654,26 @@ export default function Home() {
                 className="bg-dark text-white py-5 mb-5"
                 style={{
                     background:
-                        "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
-                    backgroundSize: "cover",
+                        "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7))",
+                    backgroundImage: schoolImageLink
+                        ? "url(" + schoolImageLink + ")"
+                        : "none",
+                    backgroundSize: "100% 100%",
                     backgroundPosition: "center",
+                    backdropFilter: "brightness(0.5)",
                 }}
             >
+                <div
+                    style={{
+                        top: "0",
+                        left: "0",
+                        position: "absolute",
+                        width: "100%",
+                        height: "100%",
+                        zIndex: -1,
+                        backgroundColor: "rgba(0,0,0,0.5)",
+                    }}
+                ></div>
                 <Container className="py-5 text-center">
                     <h1 className="display-4 fw-bold mb-3">
                         Discover Amazing Events
