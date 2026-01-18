@@ -258,9 +258,8 @@ export default function Home() {
             console.error("Error saving interests:", error);
             setMessage({
                 type: "danger",
-                text: `Failed to save interests: ${
-                    error?.message || "Unknown error"
-                }`,
+                text: `Failed to save interests: ${error?.message || "Unknown error"
+                    }`,
             });
         } finally {
             setInterestSaving(false);
@@ -634,15 +633,15 @@ export default function Home() {
                                 {(searchTerm ||
                                     selectedCategories.length > 0 ||
                                     selectedTags.length > 0) && (
-                                    <Button
-                                        variant="link"
-                                        className="p-0 text-muted small text-decoration-none d-flex align-items-center"
-                                        onClick={handleClearFilters}
-                                    >
-                                        <RotateCcw size={14} className="me-1" />{" "}
-                                        Clear All
-                                    </Button>
-                                )}
+                                        <Button
+                                            variant="link"
+                                            className="p-0 text-muted small text-decoration-none d-flex align-items-center"
+                                            onClick={handleClearFilters}
+                                        >
+                                            <RotateCcw size={14} className="me-1" />{" "}
+                                            Clear All
+                                        </Button>
+                                    )}
                             </div>
 
                             <div className="mb-4">
@@ -663,8 +662,8 @@ export default function Home() {
                                             setSelectedCategories((prev) =>
                                                 prev.includes(cat)
                                                     ? prev.filter(
-                                                          (c) => c !== cat
-                                                      )
+                                                        (c) => c !== cat
+                                                    )
                                                     : [...prev, cat]
                                             )
                                         }
@@ -697,8 +696,8 @@ export default function Home() {
                                                 setSelectedTags((prev) =>
                                                     prev.includes(tag)
                                                         ? prev.filter(
-                                                              (t) => t !== tag
-                                                          )
+                                                            (t) => t !== tag
+                                                        )
                                                         : [...prev, tag]
                                                 )
                                             }
@@ -729,170 +728,6 @@ export default function Home() {
                         <div className="mb-4">
                             {suggestedEvents.length > 0 && (
                                 <h4 className="fw-bold mb-3">More Events</h4>
-                        <Row>
-                            {filteredEvents.map((event) => {
-                                const isUserSignedUp = event.signups.some(
-                                    (s: any) => s.user_id === user?.id
-                                );
-                                const confirmedCount = event.signups.filter(
-                                    (s: any) => s.status === "confirmed"
-                                ).length;
-                                const waitlistCount = event.signups.filter(
-                                    (s: any) => s.status === "waitlisted"
-                                ).length;
-                                const userStatus = event.signups.find(
-                                    (s: any) => s.user_id === user?.id
-                                )?.status;
-
-                                return (
-                                    <Col
-                                        key={event.id}
-                                        md={6}
-                                        lg={3}
-                                        className="mb-4"
-                                    >
-                                        <Card
-                                            className="event-card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition"
-                                            onClick={() => {
-                                                setSelectedEvent(event);
-                                                setShowModal(true);
-                                                setMessage(null);
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    height: "160px",
-                                                    overflow: "hidden",
-                                                    position: "relative",
-                                                }}
-                                            >
-                                                {event.image_url ? (
-                                                    <Card.Img
-                                                        variant="top"
-                                                        src={event.image_url}
-                                                        className="h-100 w-100 object-fit-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="h-100 w-100 bg-info-subtle d-flex align-items-center justify-content-center text-info">
-                                                        <Calendar size={48} />
-                                                    </div>
-                                                )}
-                                                <div className="position-absolute top-0 end-0 p-3">
-                                                    <Badge
-                                                        bg="white"
-                                                        className="text-dark bg-opacity-75 backdrop-blur shadow-sm rounded-pill py-2 px-3 fw-bold"
-                                                    >
-                                                        {event.category}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                            <Card.Body className="p-2">
-                                                <h6 className="fw-bold mb-1 text-truncate">
-                                                    {event.name}
-                                                </h6>
-                                                <div
-                                                    className="text-muted small mb-2"
-                                                    style={{
-                                                        fontSize: "0.8rem",
-                                                    }}
-                                                >
-                                                    <div className="d-flex align-items-center mb-1 text-truncate">
-                                                        <Clock
-                                                            size={14}
-                                                            className="me-2 text-info flex-shrink-0"
-                                                        />
-                                                        {formatDateTime(
-                                                            event.start_datetime
-                                                        )}
-                                                    </div>
-                                                    <div className="d-flex align-items-center text-truncate">
-                                                        <MapPin
-                                                            size={14}
-                                                            className="me-2 text-info flex-shrink-0"
-                                                        />
-                                                        {event.location}
-                                                    </div>
-                                                </div>
-                                                <div className="d-flex flex-wrap gap-1 mb-2">
-                                                    {event.tags?.map(
-                                                        (tag: string) => (
-                                                            <span
-                                                                key={tag}
-                                                                className="text-info bg-info-subtle px-2 py-0.5 rounded fw-medium"
-                                                                style={{
-                                                                    fontSize:
-                                                                        "0.75rem",
-                                                                }}
-                                                            >
-                                                                {tag}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
-                                                <div className="d-flex justify-content-between align-items-center mt-auto">
-                                                    {isUserSignedUp ? (
-                                                        <Badge
-                                                            bg={
-                                                                userStatus ===
-                                                                "confirmed"
-                                                                    ? "success"
-                                                                    : "warning"
-                                                            }
-                                                            className="py-2 px-3 rounded-pill d-flex align-items-center"
-                                                        >
-                                                            <CheckCircle2
-                                                                size={14}
-                                                                className="me-1"
-                                                            />
-                                                            {userStatus ===
-                                                            "confirmed"
-                                                                ? "Registered"
-                                                                : "Waitlisted"}
-                                                        </Badge>
-                                                    ) : (
-                                                        <span className="text-muted small d-flex align-items-center">
-                                                            <Users
-                                                                size={14}
-                                                                className="me-1"
-                                                            />
-                                                            {confirmedCount}/
-                                                            {event.capacity}
-                                                            {waitlistCount >
-                                                            0 ? (
-                                                                <span className="ms-2 text-warning fw-medium">
-                                                                    (Wait:{" "}
-                                                                    {
-                                                                        waitlistCount
-                                                                    }
-                                                                    )
-                                                                </span>
-                                                            ) : confirmedCount >=
-                                                              event.capacity ? (
-                                                                <span className="ms-2 text-warning fw-medium">
-                                                                    Waitlist
-                                                                    Open
-                                                                </span>
-                                                            ) : null}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                );
-                            })}
-
-                            {filteredEvents.length === 0 && (
-                                <Col className="text-center py-5">
-                                    <h3 className="fw-bold text-muted">
-                                        No events found
-                                    </h3>
-                                    <p className="text-muted">
-                                        There are currently no events listed for{" "}
-                                        {selectedSchool}. Try checking another
-                                        university or adjusting your filters!
-                                    </p>
-                                </Col>
                             )}
                             <Row>
                                 {otherEvents.map((event) =>
@@ -1015,13 +850,13 @@ export default function Home() {
                                             {message.text.includes(
                                                 "required profile info"
                                             ) && (
-                                                <Link
-                                                    href="/profile"
-                                                    className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
-                                                >
-                                                    Update Profile
-                                                </Link>
-                                            )}
+                                                    <Link
+                                                        href="/profile"
+                                                        className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
+                                                    >
+                                                        Update Profile
+                                                    </Link>
+                                                )}
                                         </Alert>
                                     )}
 
@@ -1071,11 +906,11 @@ export default function Home() {
                                                         size="sm"
                                                     />
                                                 ) : selectedEvent.signups.filter(
-                                                      (s: any) =>
-                                                          s.status ===
-                                                          "confirmed"
-                                                  ).length <
-                                                  selectedEvent.capacity ? (
+                                                    (s: any) =>
+                                                        s.status ===
+                                                        "confirmed"
+                                                ).length <
+                                                    selectedEvent.capacity ? (
                                                     "Signup Now"
                                                 ) : (
                                                     "Join Waitlist"
@@ -1118,11 +953,10 @@ export default function Home() {
                                         ? "info"
                                         : "light"
                                 }
-                                className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${
-                                    interestTags.includes(tag)
+                                className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${interestTags.includes(tag)
                                         ? "text-white"
                                         : "text-muted"
-                                }`}
+                                    }`}
                                 style={{ cursor: "pointer", fontSize: "1rem" }}
                                 onClick={() =>
                                     setInterestTags((prev) =>
