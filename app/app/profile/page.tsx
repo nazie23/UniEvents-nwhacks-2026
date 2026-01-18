@@ -33,9 +33,28 @@ export default function ProfilePage() {
         student_number: "",
         age: "",
         dietary_restrictions: "",
+        interests: [] as string[],
     });
 
+    const [allTags, setAllTags] = useState<string[]>([]);
+
     const supabase = createClient();
+
+    useEffect(() => {
+        const fetchTags = async () => {
+            const { data } = await supabase
+                .from("events")
+                .select("tags")
+                .eq("is_archived", false);
+
+            if (data) {
+                const tags = Array.from(new Set(data.flatMap((e: any) => e.tags || [])));
+                setAllTags(tags);
+            }
+        };
+        fetchTags();
+    }, []);
+
 
     useEffect(() => {
         const checkUser = async () => {
@@ -75,6 +94,7 @@ export default function ProfilePage() {
                     student_number: data.student_number || "",
                     age: data.age?.toString() || "",
                     dietary_restrictions: data.dietary_restrictions || "",
+                    interests: data.interests || [],
                 });
             }
             setLoading(false);
@@ -100,6 +120,7 @@ export default function ProfilePage() {
                 student_number: profile.student_number,
                 age: profile.age ? parseInt(profile.age, 10) : null,
                 dietary_restrictions: profile.dietary_restrictions,
+                interests: profile.interests,
                 updated_at: new Date().toISOString(),
             });
 
@@ -255,6 +276,34 @@ export default function ProfilePage() {
                                         className="py-2 bg-light border-0"
                                     />
                                 </Form.Group>
+
+                                <div className="mb-4">
+                                    <Form.Label className="small fw-bold text-muted d-block mb-3">
+                                        Your Interests
+                                    </Form.Label>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        {allTags.map((tag) => (
+                                            <span
+                                                key={tag}
+                                                className={`py-2 px-3 rounded-pill cursor-pointer border user-select-none transition ${profile.interests.includes(tag)
+                                                    ? "bg-info text-white border-info"
+                                                    : "bg-light text-muted border-light"
+                                                    }`}
+                                                style={{ cursor: "pointer", fontSize: "0.9rem" }}
+                                                onClick={() =>
+                                                    setProfile((prev) => ({
+                                                        ...prev,
+                                                        interests: prev.interests.includes(tag)
+                                                            ? prev.interests.filter((t) => t !== tag)
+                                                            : [...prev.interests, tag]
+                                                    }))
+                                                }
+                                            >
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
 
                                 <div className="d-grid mt-4">
                                     <Button

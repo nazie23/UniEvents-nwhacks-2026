@@ -33,6 +33,10 @@ export async function GET(request: NextRequest) {
         );
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
+            const next = requestUrl.searchParams.get("next");
+            if (next) {
+                return NextResponse.redirect(`${origin}${next}`);
+            }
             return NextResponse.redirect(`${origin}/`);
         }
     }

@@ -220,6 +220,44 @@ export default function Home() {
         setSelectedTags([]);
     };
 
+    // Interest Selection Modal Logic
+    const [showInterestsModal, setShowInterestsModal] = useState(false);
+    const [interestTags, setInterestTags] = useState<string[]>([]);
+    const [interestSaving, setInterestSaving] = useState(false);
+
+    useEffect(() => {
+        // Check for welcome param
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("welcome") === "true") {
+            setShowInterestsModal(true);
+            // Clean URL
+            window.history.replaceState({}, "", "/");
+        }
+    }, []);
+
+    const handleSaveInterests = async () => {
+        if (!user) return;
+        setInterestSaving(true);
+        try {
+            const { error } = await supabase
+                .from("profiles")
+                .update({ interests: interestTags })
+                .eq("id", user.id);
+
+            if (error) throw error;
+
+            // Optional: update local profile if we were tracking it closely, 
+            // but for home page filtering we might want to reload or just close modal.
+            setShowInterestsModal(false);
+            setMessage({ type: "success", text: "Interests saved successfully!" });
+        } catch (error: any) {
+            console.error("Error saving interests:", error);
+            setMessage({ type: "danger", text: `Failed to save interests: ${error?.message || "Unknown error"}` });
+        } finally {
+            setInterestSaving(false);
+        }
+    };
+
     const categories = Array.from(new Set(events.map((e) => e.category)));
     const allTags = Array.from(new Set(events.flatMap((e) => e.tags || [])));
 
@@ -385,15 +423,15 @@ export default function Home() {
                                 {(searchTerm ||
                                     selectedCategories.length > 0 ||
                                     selectedTags.length > 0) && (
-                                    <Button
-                                        variant="link"
-                                        className="p-0 text-muted small text-decoration-none d-flex align-items-center"
-                                        onClick={handleClearFilters}
-                                    >
-                                        <RotateCcw size={14} className="me-1" />{" "}
-                                        Clear All
-                                    </Button>
-                                )}
+                                        <Button
+                                            variant="link"
+                                            className="p-0 text-muted small text-decoration-none d-flex align-items-center"
+                                            onClick={handleClearFilters}
+                                        >
+                                            <RotateCcw size={14} className="me-1" />{" "}
+                                            Clear All
+                                        </Button>
+                                    )}
                             </div>
 
                             <div className="mb-4">
@@ -414,8 +452,8 @@ export default function Home() {
                                             setSelectedCategories((prev) =>
                                                 prev.includes(cat)
                                                     ? prev.filter(
-                                                          (c) => c !== cat
-                                                      )
+                                                        (c) => c !== cat
+                                                    )
                                                     : [...prev, cat]
                                             )
                                         }
@@ -436,18 +474,17 @@ export default function Home() {
                                                     ? "info"
                                                     : "light"
                                             }
-                                            className={`py-2 px-3 rounded-pill cursor-pointer border ${
-                                                selectedTags.includes(tag)
-                                                    ? "text-white"
-                                                    : "text-muted"
-                                            }`}
+                                            className={`py-2 px-3 rounded-pill cursor-pointer border ${selectedTags.includes(tag)
+                                                ? "text-white"
+                                                : "text-muted"
+                                                }`}
                                             style={{ cursor: "pointer" }}
                                             onClick={() =>
                                                 setSelectedTags((prev) =>
                                                     prev.includes(tag)
                                                         ? prev.filter(
-                                                              (t) => t !== tag
-                                                          )
+                                                            (t) => t !== tag
+                                                        )
                                                         : [...prev, tag]
                                                 )
                                             }
@@ -547,7 +584,7 @@ export default function Home() {
                                                         <Badge
                                                             bg={
                                                                 userStatus ===
-                                                                "confirmed"
+                                                                    "confirmed"
                                                                     ? "success"
                                                                     : "warning"
                                                             }
@@ -558,7 +595,7 @@ export default function Home() {
                                                                 className="me-1"
                                                             />
                                                             {userStatus ===
-                                                            "confirmed"
+                                                                "confirmed"
                                                                 ? "Registered"
                                                                 : "Waitlisted"}
                                                         </Badge>
@@ -709,13 +746,13 @@ export default function Home() {
                                             {message.text.includes(
                                                 "required profile info"
                                             ) && (
-                                                <Link
-                                                    href="/profile"
-                                                    className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
-                                                >
-                                                    Update Profile
-                                                </Link>
-                                            )}
+                                                    <Link
+                                                        href="/profile"
+                                                        className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
+                                                    >
+                                                        Update Profile
+                                                    </Link>
+                                                )}
                                         </Alert>
                                     )}
 
@@ -765,11 +802,11 @@ export default function Home() {
                                                         size="sm"
                                                     />
                                                 ) : selectedEvent.signups.filter(
-                                                      (s: any) =>
-                                                          s.status ===
-                                                          "confirmed"
-                                                  ).length <
-                                                  selectedEvent.capacity ? (
+                                                    (s: any) =>
+                                                        s.status ===
+                                                        "confirmed"
+                                                ).length <
+                                                    selectedEvent.capacity ? (
                                                     "Signup Now"
                                                 ) : (
                                                     "Join Waitlist"
@@ -782,6 +819,72 @@ export default function Home() {
                         </Modal.Body>
                     </>
                 )}
+            </Modal>
+            {/* Interest Selection Modal */}
+            <Modal
+                show={showInterestsModal}
+                onHide={() => setShowInterestsModal(false)}
+                size="lg"
+                centered
+                contentClassName="rounded-4"
+                backdrop="static"
+                keyboard={false}
+            >
+                <Modal.Body className="p-5 text-center">
+                    <h2 className="fw-bold mb-3">Welcome to <span className="text-info">Uni</span>Events!</h2>
+                    <p className="text-muted mb-4 lead">
+                        Let's personalize your experience. Pick some topics you're interested in, and we'll help you find the best events.
+                    </p>
+
+                    <div className="d-flex flex-wrap justify-content-center gap-2 mb-5">
+                        {allTags.map((tag) => (
+                            <Badge
+                                key={tag}
+                                bg={interestTags.includes(tag) ? "info" : "light"}
+                                className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${interestTags.includes(tag) ? "text-white" : "text-muted"
+                                    }`}
+                                style={{ cursor: "pointer", fontSize: "1rem" }}
+                                onClick={() =>
+                                    setInterestTags((prev) =>
+                                        prev.includes(tag)
+                                            ? prev.filter((t) => t !== tag)
+                                            : [...prev, tag]
+                                    )
+                                }
+                            >
+                                {interestTags.includes(tag) && <CheckCircle2 size={16} className="me-2" />}
+                                #{tag}
+                            </Badge>
+                        ))}
+                    </div>
+
+                    <div className="d-grid gap-2 col-lg-6 mx-auto">
+                        <Button
+                            variant="info"
+                            size="lg"
+                            className="text-white fw-bold rounded-pill shadow-sm py-3"
+                            onClick={handleSaveInterests}
+                            disabled={interestSaving}
+                        >
+                            {interestSaving ? (
+                                <>
+                                    <Spinner animation="border" size="sm" className="me-2" />
+                                    Saving...
+                                </>
+                            ) : (
+                                "Start Exploring"
+                            )}
+                        </Button>
+                        <Button
+                            variant="link"
+                            className="text-muted text-decoration-none"
+                            onClick={() => setShowInterestsModal(false)}
+                            disabled={interestSaving}
+                        >
+                            Skip for now
+                        </Button>
+                    </div>
+                </Modal.Body>
             </Modal>
         </div>
     );
