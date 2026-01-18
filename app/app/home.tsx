@@ -129,7 +129,11 @@ export default function Home() {
 
     const handleSignup = async (event: any) => {
         if (!user) {
-            window.location.href = "/login";
+            const currentPath =
+                window.location.pathname + window.location.search;
+            window.location.href = `/login?redirect=${encodeURIComponent(
+                currentPath
+            )}`;
             return;
         }
 
@@ -327,9 +331,6 @@ export default function Home() {
                 if (event) {
                     setSelectedEvent(event);
                     setShowModal(true);
-                    // Clear the param from URL
-                    const newUrl = window.location.pathname;
-                    window.history.replaceState({}, "", newUrl);
                 }
             }
         }
@@ -922,7 +923,18 @@ export default function Home() {
             {/* Event Modal */}
             <Modal
                 show={showModal}
-                onHide={() => setShowModal(false)}
+                onHide={() => {
+                    setShowModal(false);
+                    // Clear event param from URL if it exists
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.has("event")) {
+                        params.delete("event");
+                        const newUrl =
+                            window.location.pathname +
+                            (params.toString() ? `?${params.toString()}` : "");
+                        window.history.replaceState({}, "", newUrl);
+                    }
+                }}
                 size="lg"
                 centered
                 contentClassName="rounded-4"
