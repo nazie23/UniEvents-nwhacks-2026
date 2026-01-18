@@ -472,7 +472,12 @@ export default function Home() {
                                 )?.status;
 
                                 return (
-                                    <Col key={event.id} md={6} className="mb-4">
+                                    <Col
+                                        key={event.id}
+                                        md={6}
+                                        lg={4}
+                                        className="mb-4"
+                                    >
                                         <Card
                                             className="event-card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition"
                                             onClick={() => {
@@ -483,7 +488,7 @@ export default function Home() {
                                         >
                                             <div
                                                 style={{
-                                                    height: "200px",
+                                                    height: "160px",
                                                     overflow: "hidden",
                                                     position: "relative",
                                                 }}
@@ -508,29 +513,34 @@ export default function Home() {
                                                     </Badge>
                                                 </div>
                                             </div>
-                                            <Card.Body className="p-4">
-                                                <h4 className="fw-bold mb-3">
+                                            <Card.Body className="p-3">
+                                                <h5 className="fw-bold mb-2 text-truncate">
                                                     {event.name}
-                                                </h4>
-                                                <div className="text-muted small mb-3">
-                                                    <div className="d-flex align-items-center mb-2">
+                                                </h5>
+                                                <div
+                                                    className="text-muted small mb-2"
+                                                    style={{
+                                                        fontSize: "0.8rem",
+                                                    }}
+                                                >
+                                                    <div className="d-flex align-items-center mb-1 text-truncate">
                                                         <Clock
-                                                            size={16}
-                                                            className="me-2 text-info"
+                                                            size={14}
+                                                            className="me-2 text-info flex-shrink-0"
                                                         />
                                                         {formatDateTime(
                                                             event.start_datetime
                                                         )}
                                                     </div>
-                                                    <div className="d-flex align-items-center">
+                                                    <div className="d-flex align-items-center text-truncate">
                                                         <MapPin
-                                                            size={16}
-                                                            className="me-2 text-info"
+                                                            size={14}
+                                                            className="me-2 text-info flex-shrink-0"
                                                         />
                                                         {event.location}
                                                     </div>
                                                 </div>
-                                                <div className="d-flex flex-wrap gap-1 mb-4">
+                                                <div className="d-flex flex-wrap gap-1 mb-3">
                                                     {event.tags?.map(
                                                         (tag: string) => (
                                                             <span
