@@ -100,6 +100,16 @@ export default function SignupsPage() {
         return showExpired ? isExpired : !isExpired;
     });
 
+    const formatDateTime = (isoString: string) => {
+        return new Date(isoString).toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
     if (loading) {
         return (
             <div
@@ -258,19 +268,14 @@ export default function SignupsPage() {
                                         className="text-muted small mb-2"
                                         style={{ fontSize: "0.8rem" }}
                                     >
-                                        <div className="d-flex align-items-center mb-1">
-                                            <Calendar
+                                        <div className="d-flex align-items-center mb-1 text-truncate">
+                                            <Clock
                                                 size={14}
-                                                className="me-2 text-info"
+                                                className="me-2 text-info flex-shrink-0"
                                             />
-                                            {new Date(
+                                            {formatDateTime(
                                                 event.start_datetime
-                                            ).toLocaleDateString(undefined, {
-                                                month: "short",
-                                                day: "numeric",
-                                                hour: "numeric",
-                                                minute: "2-digit",
-                                            })}
+                                            )}
                                         </div>
                                         <div className="d-flex align-items-center">
                                             <MapPin
@@ -349,9 +354,15 @@ export default function SignupsPage() {
                                                 When
                                             </div>
                                             <div className="fw-bold">
-                                                {new Date(
+                                                {formatDateTime(
                                                     selectedEvent.start_datetime
-                                                ).toLocaleString()}
+                                                )}
+                                            </div>
+                                            <div className="small text-muted">
+                                                to{" "}
+                                                {formatDateTime(
+                                                    selectedEvent.end_datetime
+                                                )}
                                             </div>
                                         </div>
                                     </div>
