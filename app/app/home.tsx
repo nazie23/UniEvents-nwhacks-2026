@@ -37,6 +37,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
+    const [selectedSchool, setSelectedSchool] = useState<string>("UBC");
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [showModal, setShowModal] = useState(false);
     const [signupLoading, setSignupLoading] = useState(false);
@@ -155,7 +156,7 @@ export default function Home() {
             }
         } else {
             setMessage({
-                type: "success",
+                type: status === "confirmed" ? "success" : "warning",
                 text:
                     status === "confirmed"
                         ? "Registration successful!"
@@ -262,6 +263,7 @@ export default function Home() {
     const allTags = Array.from(new Set(events.flatMap((e) => e.tags || [])));
 
     const filteredEvents = events.filter((event) => {
+        const matchesSchool = event.school === selectedSchool;
         const matchesSearch =
             event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             event.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -271,7 +273,7 @@ export default function Home() {
         const matchesTags =
             selectedTags.length === 0 ||
             selectedTags.every((tag) => event.tags?.includes(tag));
-        return matchesSearch && matchesCategory && matchesTags;
+        return matchesSchool && matchesSearch && matchesCategory && matchesTags;
     });
 
     const formatDateTime = (isoString: string) => {
@@ -304,9 +306,45 @@ export default function Home() {
                 className="shadow-sm py-3 sticky-top"
             >
                 <Container>
-                    <Navbar.Brand href="/" className="fw-bold fs-3">
-                        <span style={{ color: "#0dcaf0" }}>Uni</span>Events
-                    </Navbar.Brand>
+                    <div className="navbar-brand fw-bold fs-3 d-flex align-items-center">
+                        <Link
+                            href="/"
+                            className="text-decoration-none text-white"
+                        >
+                            <span style={{ color: "#0dcaf0" }}>Uni</span>Events
+                        </Link>
+                        <div className="ms-3 ps-3 border-start border-secondary border-opacity-25">
+                            <Dropdown
+                                onSelect={(s: any) => setSelectedSchool(s)}
+                            >
+                                <Dropdown.Toggle
+                                    variant="dark"
+                                    id="dropdown-school"
+                                    className="border-0 p-0 fs-6 fw-bold opacity-75 d-flex align-items-center"
+                                >
+                                    <MapPin
+                                        size={16}
+                                        className="me-2 text-info"
+                                    />
+                                    {selectedSchool}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu className="border-0 shadow-lg rounded-4 mt-2">
+                                    <Dropdown.Item eventKey="UBC">
+                                        UBC
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="SFU">
+                                        SFU
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="UVic">
+                                        UVic
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="BCIT">
+                                        BCIT
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
+                    </div>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse
                         id="basic-navbar-nav"
@@ -413,9 +451,9 @@ export default function Home() {
             <Container className="mb-5">
                 <Row>
                     {/* Filters */}
-                    <Col lg={3} className="mb-4">
+                    <Col lg={2} className="mb-4">
                         <Card
-                            className="border-0 shadow-sm rounded-4 p-4 sticky-top"
+                            className="border-0 shadow-sm rounded-4 p-3 sticky-top"
                             style={{ top: "100px" }}
                         >
                             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -465,7 +503,7 @@ export default function Home() {
                                 <label className="small fw-bold text-muted mb-2 d-block">
                                     TAGS
                                 </label>
-                                <div className="d-flex flex-wrap gap-2">
+                                <div className="d-flex flex-wrap gap-1">
                                     {allTags.map((tag) => (
                                         <Badge
                                             key={tag}
@@ -474,11 +512,15 @@ export default function Home() {
                                                     ? "info"
                                                     : "light"
                                             }
-                                            className={`py-2 px-3 rounded-pill cursor-pointer border ${selectedTags.includes(tag)
-                                                ? "text-white"
-                                                : "text-muted"
-                                                }`}
-                                            style={{ cursor: "pointer" }}
+                                            className={`py-1.5 px-2.5 rounded-pill cursor-pointer border ${
+                                                selectedTags.includes(tag)
+                                                    ? "text-white"
+                                                    : "text-muted"
+                                            }`}
+                                            style={{
+                                                cursor: "pointer",
+                                                fontSize: "0.75rem",
+                                            }}
                                             onClick={() =>
                                                 setSelectedTags((prev) =>
                                                     prev.includes(tag)
@@ -489,7 +531,7 @@ export default function Home() {
                                                 )
                                             }
                                         >
-                                            #{tag}
+                                            {tag}
                                         </Badge>
                                     ))}
                                 </div>
@@ -498,18 +540,29 @@ export default function Home() {
                     </Col>
 
                     {/* Event Grid */}
-                    <Col lg={9}>
+                    <Col lg={10}>
                         <Row>
                             {filteredEvents.map((event) => {
                                 const isUserSignedUp = event.signups.some(
                                     (s: any) => s.user_id === user?.id
                                 );
+                                const confirmedCount = event.signups.filter(
+                                    (s: any) => s.status === "confirmed"
+                                ).length;
+                                const waitlistCount = event.signups.filter(
+                                    (s: any) => s.status === "waitlisted"
+                                ).length;
                                 const userStatus = event.signups.find(
                                     (s: any) => s.user_id === user?.id
                                 )?.status;
 
                                 return (
-                                    <Col key={event.id} md={6} className="mb-4">
+                                    <Col
+                                        key={event.id}
+                                        md={6}
+                                        lg={3}
+                                        className="mb-4"
+                                    >
                                         <Card
                                             className="event-card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition"
                                             onClick={() => {
@@ -520,7 +573,7 @@ export default function Home() {
                                         >
                                             <div
                                                 style={{
-                                                    height: "200px",
+                                                    height: "160px",
                                                     overflow: "hidden",
                                                     position: "relative",
                                                 }}
@@ -545,36 +598,45 @@ export default function Home() {
                                                     </Badge>
                                                 </div>
                                             </div>
-                                            <Card.Body className="p-4">
-                                                <h4 className="fw-bold mb-3">
+                                            <Card.Body className="p-2">
+                                                <h6 className="fw-bold mb-1 text-truncate">
                                                     {event.name}
-                                                </h4>
-                                                <div className="text-muted small mb-3">
-                                                    <div className="d-flex align-items-center mb-2">
+                                                </h6>
+                                                <div
+                                                    className="text-muted small mb-2"
+                                                    style={{
+                                                        fontSize: "0.8rem",
+                                                    }}
+                                                >
+                                                    <div className="d-flex align-items-center mb-1 text-truncate">
                                                         <Clock
-                                                            size={16}
-                                                            className="me-2 text-info"
+                                                            size={14}
+                                                            className="me-2 text-info flex-shrink-0"
                                                         />
                                                         {formatDateTime(
                                                             event.start_datetime
                                                         )}
                                                     </div>
-                                                    <div className="d-flex align-items-center">
+                                                    <div className="d-flex align-items-center text-truncate">
                                                         <MapPin
-                                                            size={16}
-                                                            className="me-2 text-info"
+                                                            size={14}
+                                                            className="me-2 text-info flex-shrink-0"
                                                         />
                                                         {event.location}
                                                     </div>
                                                 </div>
-                                                <div className="d-flex flex-wrap gap-1 mb-4">
+                                                <div className="d-flex flex-wrap gap-1 mb-2">
                                                     {event.tags?.map(
                                                         (tag: string) => (
                                                             <span
                                                                 key={tag}
-                                                                className="text-info bg-info-subtle px-2 py-1 rounded small"
+                                                                className="text-info bg-info-subtle px-2 py-0.5 rounded fw-medium"
+                                                                style={{
+                                                                    fontSize:
+                                                                        "0.75rem",
+                                                                }}
                                                             >
-                                                                #{tag}
+                                                                {tag}
                                                             </span>
                                                         )
                                                     )}
@@ -605,26 +667,26 @@ export default function Home() {
                                                                 size={14}
                                                                 className="me-1"
                                                             />
-                                                            {
-                                                                event.signups.filter(
-                                                                    (s: any) =>
-                                                                        s.status ===
-                                                                        "confirmed"
-                                                                ).length
-                                                            }
-                                                            /{event.capacity}{" "}
-                                                            spots
+                                                            {confirmedCount}/
+                                                            {event.capacity}
+                                                            {waitlistCount >
+                                                            0 ? (
+                                                                <span className="ms-2 text-warning fw-medium">
+                                                                    (Wait:{" "}
+                                                                    {
+                                                                        waitlistCount
+                                                                    }
+                                                                    )
+                                                                </span>
+                                                            ) : confirmedCount >=
+                                                              event.capacity ? (
+                                                                <span className="ms-2 text-warning fw-medium">
+                                                                    Waitlist
+                                                                    Open
+                                                                </span>
+                                                            ) : null}
                                                         </span>
                                                     )}
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-info p-0 d-flex align-items-center text-decoration-none fw-bold small"
-                                                    >
-                                                        Details{" "}
-                                                        <ChevronRight
-                                                            size={16}
-                                                        />
-                                                    </Button>
                                                 </div>
                                             </Card.Body>
                                         </Card>
@@ -634,13 +696,13 @@ export default function Home() {
 
                             {filteredEvents.length === 0 && (
                                 <Col className="text-center py-5">
-                                    <div className="text-muted opacity-50 mb-3">
-                                        <Search size={64} />
-                                    </div>
-                                    <h3>No events found</h3>
+                                    <h3 className="fw-bold text-muted">
+                                        No events found
+                                    </h3>
                                     <p className="text-muted">
-                                        Try adjusting your search or filters to
-                                        find what you're looking for.
+                                        There are currently no events listed for{" "}
+                                        {selectedSchool}. Try checking another
+                                        university or adjusting your filters!
                                     </p>
                                 </Col>
                             )}

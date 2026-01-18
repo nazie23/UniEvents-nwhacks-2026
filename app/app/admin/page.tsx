@@ -27,7 +27,8 @@ import {
     Calendar,
     MapPin,
     Plus,
-    CheckCircle,
+    CheckCircle2,
+    Clock,
     XCircle,
     ArrowUpCircle,
 } from "lucide-react";
@@ -56,7 +57,9 @@ export default function AdminDashboard() {
         end_datetime: "",
         capacity: 50,
         description: "",
-        required_profile_fields: [] as string[],
+        image_url: "",
+        school: "UBC",
+        required_profile_fields: ["first_name", "last_name"] as string[],
     });
 
     const supabase = createClient();
@@ -204,7 +207,9 @@ export default function AdminDashboard() {
                 end_datetime: "",
                 capacity: 50,
                 description: "",
-                required_profile_fields: [],
+                image_url: "",
+                school: "UBC",
+                required_profile_fields: ["first_name", "last_name"],
             });
             fetchEvents(user.id);
             setMessage({
@@ -377,7 +382,7 @@ export default function AdminDashboard() {
                     </Button>
                 </div>
 
-                {message && (
+                {message && !showDetails && !showCreateModal && (
                     <Alert
                         variant={message.type}
                         dismissible
@@ -402,7 +407,7 @@ export default function AdminDashboard() {
 
                 <Row>
                     {filteredEvents.map((event) => (
-                        <Col key={event.id} lg={4} md={6} className="mb-4">
+                        <Col key={event.id} lg={3} md={6} className="mb-4">
                             <Card
                                 className="h-100 border-0 shadow-sm rounded-4 overflow-hidden"
                                 onClick={() => openEventDetails(event)}
@@ -410,7 +415,7 @@ export default function AdminDashboard() {
                             >
                                 <div
                                     style={{
-                                        height: "180px",
+                                        height: "160px",
                                         position: "relative",
                                     }}
                                 >
@@ -430,7 +435,7 @@ export default function AdminDashboard() {
                                         )}
                                     </div>
                                 </div>
-                                <Card.Body className="p-4">
+                                <Card.Body className="p-2">
                                     <div className="d-flex justify-content-between align-items-start mb-2">
                                         <Badge bg="info" className="mb-2">
                                             {event.category}
@@ -447,10 +452,13 @@ export default function AdminDashboard() {
                                             )}
                                         </div>
                                     </div>
-                                    <Card.Title className="fw-bold">
+                                    <h6 className="fw-bold mb-1 text-truncate">
                                         {event.name}
-                                    </Card.Title>
-                                    <div className="text-muted small mb-3">
+                                    </h6>
+                                    <div
+                                        className="text-muted small mb-2"
+                                        style={{ fontSize: "0.8rem" }}
+                                    >
                                         <div className="d-flex align-items-center mb-1">
                                             <Calendar
                                                 size={14}
@@ -572,136 +580,321 @@ export default function AdminDashboard() {
                                             />
                                         </div>
                                     ) : (
-                                        <div className="table-responsive rounded-4 border">
-                                            <Table hover className="mb-0">
-                                                <thead className="bg-light">
-                                                    <tr>
-                                                        <th className="small fw-bold">
-                                                            User
-                                                        </th>
-                                                        <th className="small fw-bold">
-                                                            Status
-                                                        </th>
-                                                        <th className="small fw-bold">
-                                                            Dietary
-                                                        </th>
-                                                        <th className="small fw-bold text-end">
-                                                            Actions
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {attendees.map((signup) => (
-                                                        <tr
-                                                            key={signup.id}
-                                                            className="align-middle"
-                                                        >
-                                                            <td>
-                                                                <div className="fw-bold">
-                                                                    {signup
-                                                                        .profiles
-                                                                        ?.first_name ||
-                                                                        "Unknown"}{" "}
-                                                                    {signup
-                                                                        .profiles
-                                                                        ?.last_name ||
-                                                                        "User"}
-                                                                </div>
-                                                                <div className="small text-muted">
-                                                                    {signup
-                                                                        .profiles
-                                                                        ?.student_number ||
-                                                                        "No ID / Unfinished Profile"}
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <Badge
-                                                                    bg={
-                                                                        signup.status ===
+                                        <div className="d-flex flex-column gap-4">
+                                            {/* Confirmed List */}
+                                            <div>
+                                                <h6 className="fw-bold mb-3 text-success d-flex align-items-center">
+                                                    <CheckCircle2
+                                                        size={16}
+                                                        className="me-2"
+                                                    />
+                                                    Confirmed Sign-ups (
+                                                    {
+                                                        attendees.filter(
+                                                            (a) =>
+                                                                a.status ===
+                                                                "confirmed"
+                                                        ).length
+                                                    }
+                                                    )
+                                                </h6>
+                                                <div className="table-responsive rounded-4 border">
+                                                    <Table
+                                                        hover
+                                                        className="mb-0"
+                                                    >
+                                                        <thead className="bg-light">
+                                                            <tr>
+                                                                <th className="small fw-bold">
+                                                                    User
+                                                                </th>
+                                                                <th className="small fw-bold">
+                                                                    Dietary
+                                                                </th>
+                                                                <th className="small fw-bold text-end">
+                                                                    Actions
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {attendees
+                                                                .filter(
+                                                                    (a) =>
+                                                                        a.status ===
                                                                         "confirmed"
-                                                                            ? "success-subtle"
-                                                                            : "warning-subtle"
-                                                                    }
-                                                                    className={
-                                                                        signup.status ===
-                                                                        "confirmed"
-                                                                            ? "text-success"
-                                                                            : "text-warning"
-                                                                    }
-                                                                >
-                                                                    {signup.status.toUpperCase()}
-                                                                </Badge>
-                                                            </td>
-                                                            <td
-                                                                className="small"
-                                                                style={{
-                                                                    maxWidth:
-                                                                        "150px",
-                                                                }}
-                                                            >
-                                                                <span className="text-truncate d-block">
-                                                                    {signup
-                                                                        .profiles
-                                                                        ?.dietary_restrictions ||
-                                                                        "None"}
-                                                                </span>
-                                                            </td>
-                                                            <td className="text-end">
-                                                                <div className="d-flex justify-content-end gap-1">
-                                                                    {signup.status ===
-                                                                        "waitlisted" &&
-                                                                        selectedEvent.confirmedCount <
-                                                                            selectedEvent.capacity && (
-                                                                            <Button
-                                                                                variant="link"
-                                                                                className="p-1 text-success"
-                                                                                title="Promote to Confirmed"
-                                                                                onClick={() =>
-                                                                                    handleUpdateSignupStatus(
-                                                                                        signup.id,
-                                                                                        "confirmed"
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <ArrowUpCircle
-                                                                                    size={
-                                                                                        18
-                                                                                    }
-                                                                                />
-                                                                            </Button>
-                                                                        )}
-                                                                    <Button
-                                                                        variant="link"
-                                                                        className="p-1 text-danger"
-                                                                        title="Remove"
-                                                                        onClick={() =>
-                                                                            handleRemoveSignup(
+                                                                )
+                                                                .map(
+                                                                    (
+                                                                        signup
+                                                                    ) => (
+                                                                        <tr
+                                                                            key={
                                                                                 signup.id
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <XCircle
-                                                                            size={
-                                                                                18
                                                                             }
-                                                                        />
-                                                                    </Button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                    {attendees.length === 0 && (
-                                                        <tr>
-                                                            <td
-                                                                colSpan={4}
-                                                                className="text-center py-4 text-muted small"
-                                                            >
-                                                                No signups yet
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </tbody>
-                                            </Table>
+                                                                            className="align-middle"
+                                                                        >
+                                                                            <td>
+                                                                                <div className="fw-bold">
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.first_name ||
+                                                                                        "Unknown"}{" "}
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.last_name ||
+                                                                                        "User"}
+                                                                                </div>
+                                                                                <div className="small text-muted">
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.student_number ||
+                                                                                        "No ID"}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td
+                                                                                className="small"
+                                                                                style={{
+                                                                                    maxWidth:
+                                                                                        "150px",
+                                                                                }}
+                                                                            >
+                                                                                <span className="text-truncate d-block">
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.dietary_restrictions ||
+                                                                                        "None"}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="text-end">
+                                                                                <Button
+                                                                                    variant="link"
+                                                                                    className="p-1 text-danger"
+                                                                                    title="remove user"
+                                                                                    onClick={() =>
+                                                                                        handleRemoveSignup(
+                                                                                            signup.id
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    <XCircle
+                                                                                        size={
+                                                                                            18
+                                                                                        }
+                                                                                    />
+                                                                                </Button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    )
+                                                                )}
+                                                            {attendees.filter(
+                                                                (a) =>
+                                                                    a.status ===
+                                                                    "confirmed"
+                                                            ).length === 0 && (
+                                                                <tr>
+                                                                    <td
+                                                                        colSpan={
+                                                                            3
+                                                                        }
+                                                                        className="text-center py-3 text-muted small"
+                                                                    >
+                                                                        No
+                                                                        confirmed
+                                                                        attendees
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </Table>
+                                                </div>
+                                            </div>
+
+                                            {message && (
+                                                <Alert
+                                                    variant={message.type}
+                                                    dismissible
+                                                    onClose={() =>
+                                                        setMessage(null)
+                                                    }
+                                                    className="py-3 border-0 shadow-sm"
+                                                >
+                                                    {message.text}
+                                                </Alert>
+                                            )}
+
+                                            {/* Waitlist List */}
+                                            <div>
+                                                <h6 className="fw-bold mb-3 text-warning d-flex align-items-center">
+                                                    <Clock
+                                                        size={16}
+                                                        className="me-2"
+                                                    />
+                                                    Waitlisted (
+                                                    {
+                                                        attendees.filter(
+                                                            (a) =>
+                                                                a.status ===
+                                                                "waitlisted"
+                                                        ).length
+                                                    }
+                                                    )
+                                                </h6>
+                                                <div className="table-responsive rounded-4 border">
+                                                    <Table
+                                                        hover
+                                                        className="mb-0"
+                                                    >
+                                                        <thead className="bg-light">
+                                                            <tr>
+                                                                <th className="small fw-bold">
+                                                                    Pos
+                                                                </th>
+                                                                <th className="small fw-bold">
+                                                                    User
+                                                                </th>
+                                                                <th className="small fw-bold">
+                                                                    Dietary
+                                                                </th>
+                                                                <th className="small fw-bold text-end">
+                                                                    Actions
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {attendees
+                                                                .filter(
+                                                                    (a) =>
+                                                                        a.status ===
+                                                                        "waitlisted"
+                                                                )
+                                                                .map(
+                                                                    (
+                                                                        signup,
+                                                                        index
+                                                                    ) => (
+                                                                        <tr
+                                                                            key={
+                                                                                signup.id
+                                                                            }
+                                                                            className="align-middle"
+                                                                        >
+                                                                            <td className="fw-bold text-muted small">
+                                                                                #
+                                                                                {index +
+                                                                                    1}
+                                                                            </td>
+                                                                            <td>
+                                                                                <div className="fw-bold">
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.first_name ||
+                                                                                        "Unknown"}{" "}
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.last_name ||
+                                                                                        "User"}
+                                                                                </div>
+                                                                                <div className="small text-muted">
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.student_number ||
+                                                                                        "No ID"}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td
+                                                                                className="small"
+                                                                                style={{
+                                                                                    maxWidth:
+                                                                                        "150px",
+                                                                                }}
+                                                                            >
+                                                                                <span className="text-truncate d-block">
+                                                                                    {signup
+                                                                                        .profiles
+                                                                                        ?.dietary_restrictions ||
+                                                                                        "None"}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="text-end">
+                                                                                <div className="d-flex justify-content-end gap-1">
+                                                                                    <Button
+                                                                                        variant="link"
+                                                                                        className="p-1 text-success shadow-none"
+                                                                                        title="sign-up user"
+                                                                                        onClick={() => {
+                                                                                            if (
+                                                                                                selectedEvent.confirmedCount >=
+                                                                                                selectedEvent.capacity
+                                                                                            ) {
+                                                                                                setMessage(
+                                                                                                    {
+                                                                                                        type: "warning",
+                                                                                                        text: "Cannot promote: Event is at full capacity.",
+                                                                                                    }
+                                                                                                );
+                                                                                                return;
+                                                                                            }
+                                                                                            handleUpdateSignupStatus(
+                                                                                                signup.id,
+                                                                                                "confirmed"
+                                                                                            );
+                                                                                        }}
+                                                                                        style={{
+                                                                                            opacity:
+                                                                                                selectedEvent.confirmedCount >=
+                                                                                                selectedEvent.capacity
+                                                                                                    ? 0.5
+                                                                                                    : 1,
+                                                                                        }}
+                                                                                    >
+                                                                                        <ArrowUpCircle
+                                                                                            size={
+                                                                                                18
+                                                                                            }
+                                                                                        />
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        variant="link"
+                                                                                        className="p-1 text-danger"
+                                                                                        title="remove user"
+                                                                                        onClick={() =>
+                                                                                            handleRemoveSignup(
+                                                                                                signup.id
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        <XCircle
+                                                                                            size={
+                                                                                                18
+                                                                                            }
+                                                                                        />
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    )
+                                                                )}
+                                                            {attendees.filter(
+                                                                (a) =>
+                                                                    a.status ===
+                                                                    "waitlisted"
+                                                            ).length === 0 && (
+                                                                <tr>
+                                                                    <td
+                                                                        colSpan={
+                                                                            4
+                                                                        }
+                                                                        className="text-center py-3 text-muted small"
+                                                                    >
+                                                                        Waitlist
+                                                                        is empty
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </Table>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </Col>
@@ -770,6 +963,26 @@ export default function AdminDashboard() {
                 </Modal.Header>
                 <Modal.Body className="pt-3">
                     <Form onSubmit={handleCreateEvent}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted">
+                                University / School
+                            </Form.Label>
+                            <Form.Select
+                                value={newEvent.school}
+                                onChange={(e) =>
+                                    setNewEvent({
+                                        ...newEvent,
+                                        school: e.target.value,
+                                    })
+                                }
+                                className="py-2 bg-light border-0"
+                            >
+                                <option>UBC</option>
+                                <option>SFU</option>
+                                <option>UVic</option>
+                                <option>BCIT</option>
+                            </Form.Select>
+                        </Form.Group>
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
@@ -898,6 +1111,23 @@ export default function AdminDashboard() {
                                 </Form.Group>
                             </Col>
                         </Row>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted">
+                                Image URL
+                            </Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={newEvent.image_url}
+                                onChange={(e) =>
+                                    setNewEvent({
+                                        ...newEvent,
+                                        image_url: e.target.value,
+                                    })
+                                }
+                                placeholder="https://example.com/image.jpg"
+                                className="py-2 bg-light border-0"
+                            />
+                        </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold text-muted">
                                 Tags (comma separated)
