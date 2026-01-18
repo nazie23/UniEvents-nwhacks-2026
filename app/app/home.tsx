@@ -645,13 +645,13 @@ export default function Home() {
 
                             {filteredEvents.length === 0 && (
                                 <Col className="text-center py-5">
-                                    <div className="text-muted opacity-50 mb-3">
-                                        <Search size={64} />
-                                    </div>
-                                    <h3>No events found</h3>
+                                    <h3 className="fw-bold text-muted">
+                                        No events found
+                                    </h3>
                                     <p className="text-muted">
-                                        Try adjusting your search or filters to
-                                        find what you're looking for.
+                                        There are currently no events listed for{" "}
+                                        {selectedSchool}. Try checking another
+                                        university or adjusting your filters!
                                     </p>
                                 </Col>
                             )}
