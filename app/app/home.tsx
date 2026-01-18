@@ -267,8 +267,11 @@ export default function Home() {
         }
     };
 
-    const categories = Array.from(new Set(events.map((e) => e.category)));
-    const allTags = Array.from(new Set(events.flatMap((e) => e.tags || [])));
+    const schoolEvents = events.filter((e) => e.school === selectedSchool);
+    const categories = Array.from(new Set(schoolEvents.map((e) => e.category)));
+    const allTags = Array.from(
+        new Set(schoolEvents.flatMap((e) => e.tags || []))
+    );
 
     const filteredEvents = events.filter((event) => {
         const matchesSchool = event.school === selectedSchool;
@@ -324,7 +327,10 @@ export default function Home() {
                         </Link>
                         <div className="ms-3 ps-3 border-start border-secondary border-opacity-25">
                             <Dropdown
-                                onSelect={(s: any) => setSelectedSchool(s)}
+                                onSelect={(s: any) => {
+                                    setSelectedSchool(s);
+                                    handleClearFilters();
+                                }}
                             >
                                 <Dropdown.Toggle
                                     variant="dark"
