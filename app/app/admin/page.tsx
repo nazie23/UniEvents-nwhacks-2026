@@ -666,6 +666,7 @@ export default function AdminDashboard() {
                                                                                 <Button
                                                                                     variant="link"
                                                                                     className="p-1 text-danger"
+                                                                                    title="remove user"
                                                                                     onClick={() =>
                                                                                         handleRemoveSignup(
                                                                                             signup.id
@@ -800,29 +801,25 @@ export default function AdminDashboard() {
                                                                             </td>
                                                                             <td className="text-end">
                                                                                 <div className="d-flex justify-content-end gap-1">
-                                                                                    {selectedEvent.confirmedCount <
-                                                                                        selectedEvent.capacity && (
-                                                                                        <Button
-                                                                                            variant="link"
-                                                                                            className="p-1 text-success"
-                                                                                            title="Promote"
-                                                                                            onClick={() =>
-                                                                                                handleUpdateSignupStatus(
-                                                                                                    signup.id,
-                                                                                                    "confirmed"
-                                                                                                )
+                                                                                    <Button
+                                                                                        variant="link"
+                                                                                        className="p-1 text-success shadow-none"
+                                                                                        title="sign-up user"
+                                                                                        onClick={() => {
+                                                                                            if (selectedEvent.confirmedCount >= selectedEvent.capacity) {
+                                                                                                setMessage({ type: "warning", text: "Cannot promote: Event is at full capacity." });
+                                                                                                return;
                                                                                             }
-                                                                                        >
-                                                                                            <ArrowUpCircle
-                                                                                                size={
-                                                                                                    18
-                                                                                                }
-                                                                                            />
-                                                                                        </Button>
-                                                                                    )}
+                                                                                            handleUpdateSignupStatus(signup.id, "confirmed");
+                                                                                        }}
+                                                                                        style={{ opacity: selectedEvent.confirmedCount >= selectedEvent.capacity ? 0.5 : 1 }}
+                                                                                    >
+                                                                                        <ArrowUpCircle size={18} />
+                                                                                    </Button>
                                                                                     <Button
                                                                                         variant="link"
                                                                                         className="p-1 text-danger"
+                                                                                        title="remove user"
                                                                                         onClick={() =>
                                                                                             handleRemoveSignup(
                                                                                                 signup.id
