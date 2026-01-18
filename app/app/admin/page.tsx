@@ -382,7 +382,7 @@ export default function AdminDashboard() {
                     </Button>
                 </div>
 
-                {message && (
+                {message && !showDetails && !showCreateModal && (
                     <Alert
                         variant={message.type}
                         dismissible
@@ -706,6 +706,19 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
 
+                                            {message && (
+                                                <Alert
+                                                    variant={message.type}
+                                                    dismissible
+                                                    onClose={() =>
+                                                        setMessage(null)
+                                                    }
+                                                    className="py-3 border-0 shadow-sm"
+                                                >
+                                                    {message.text}
+                                                </Alert>
+                                            )}
+
                                             {/* Waitlist List */}
                                             <div>
                                                 <h6 className="fw-bold mb-3 text-warning d-flex align-items-center">
@@ -806,15 +819,36 @@ export default function AdminDashboard() {
                                                                                         className="p-1 text-success shadow-none"
                                                                                         title="sign-up user"
                                                                                         onClick={() => {
-                                                                                            if (selectedEvent.confirmedCount >= selectedEvent.capacity) {
-                                                                                                setMessage({ type: "warning", text: "Cannot promote: Event is at full capacity." });
+                                                                                            if (
+                                                                                                selectedEvent.confirmedCount >=
+                                                                                                selectedEvent.capacity
+                                                                                            ) {
+                                                                                                setMessage(
+                                                                                                    {
+                                                                                                        type: "warning",
+                                                                                                        text: "Cannot promote: Event is at full capacity.",
+                                                                                                    }
+                                                                                                );
                                                                                                 return;
                                                                                             }
-                                                                                            handleUpdateSignupStatus(signup.id, "confirmed");
+                                                                                            handleUpdateSignupStatus(
+                                                                                                signup.id,
+                                                                                                "confirmed"
+                                                                                            );
                                                                                         }}
-                                                                                        style={{ opacity: selectedEvent.confirmedCount >= selectedEvent.capacity ? 0.5 : 1 }}
+                                                                                        style={{
+                                                                                            opacity:
+                                                                                                selectedEvent.confirmedCount >=
+                                                                                                selectedEvent.capacity
+                                                                                                    ? 0.5
+                                                                                                    : 1,
+                                                                                        }}
                                                                                     >
-                                                                                        <ArrowUpCircle size={18} />
+                                                                                        <ArrowUpCircle
+                                                                                            size={
+                                                                                                18
+                                                                                            }
+                                                                                        />
                                                                                     </Button>
                                                                                     <Button
                                                                                         variant="link"
