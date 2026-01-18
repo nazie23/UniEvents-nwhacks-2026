@@ -290,6 +290,20 @@ export default function SignupsPage() {
                                             />
                                             {event.location}
                                         </div>
+                                        {/* if event is happening */}
+                                        {new Date(event.start_datetime) <= new Date() &&
+                                            new Date(event.end_datetime) >= new Date() && (
+                                                <div className="mt-1">
+                                                    <span
+                                                        className="text-muted fw-medium"
+                                                        style={{
+                                                            fontSize: "0.75rem",
+                                                        }}
+                                                    >
+                                                        Happening
+                                                    </span>
+                                                </div>
+                                            )}
                                     </div>
                                 </Card.Body>
                             </Card>
