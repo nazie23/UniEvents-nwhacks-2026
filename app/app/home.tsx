@@ -26,6 +26,7 @@ import {
     Users,
     ChevronRight,
     CheckCircle2,
+    RotateCcw,
 } from "lucide-react";
 
 export default function Home() {
@@ -168,6 +169,12 @@ export default function Home() {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         window.location.reload();
+    };
+
+    const handleClearFilters = () => {
+        setSearchTerm("");
+        setSelectedCategories([]);
+        setSelectedTags([]);
     };
 
     const categories = Array.from(new Set(events.map((e) => e.category)));
@@ -330,7 +337,21 @@ export default function Home() {
                             className="border-0 shadow-sm rounded-4 p-4 sticky-top"
                             style={{ top: "100px" }}
                         >
-                            <h5 className="fw-bold mb-4">Filters</h5>
+                            <div className="d-flex justify-content-between align-items-center mb-4">
+                                <h5 className="fw-bold mb-0">Filters</h5>
+                                {(searchTerm ||
+                                    selectedCategories.length > 0 ||
+                                    selectedTags.length > 0) && (
+                                    <Button
+                                        variant="link"
+                                        className="p-0 text-muted small text-decoration-none d-flex align-items-center"
+                                        onClick={handleClearFilters}
+                                    >
+                                        <RotateCcw size={14} className="me-1" />{" "}
+                                        Clear All
+                                    </Button>
+                                )}
+                            </div>
 
                             <div className="mb-4">
                                 <label className="small fw-bold text-muted mb-2 d-block">
