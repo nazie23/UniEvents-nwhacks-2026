@@ -297,6 +297,16 @@ export default function AdminDashboard() {
                 new Date(b.start_datetime).getTime()
         );
 
+    const formatDateTime = (isoString: string) => {
+        return new Date(isoString).toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
     if (loading)
         return (
             <div
@@ -542,6 +552,55 @@ export default function AdminDashboard() {
                             </Modal.Title>
                         </Modal.Header>
                         <Modal.Body className="pt-3">
+                            {/* event info */}
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                                <Badge
+                                    bg="info-subtle"
+                                    className="text-info px-3 py-2 rounded-pill mb-3"
+                                >
+                                    {selectedEvent.category}
+                                </Badge>
+                            </div>
+
+                            <div className="mb-4">
+                                <div className="d-flex align-items-center mb-2">
+                                    <div className="bg-light p-2 rounded-3 me-3">
+                                        <Clock
+                                            size={18}
+                                            className="text-info"
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="small fw-bold">
+                                            {formatDateTime(
+                                                selectedEvent.start_datetime
+                                            )}
+                                        </div>
+                                        <div className="small text-muted">
+                                            to{" "}
+                                            {formatDateTime(
+                                                selectedEvent.end_datetime
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="d-flex align-items-center mb-2">
+                                    <div className="bg-light p-2 rounded-3 me-3">
+                                        <MapPin
+                                            size={18}
+                                            className="text-info"
+                                        />
+                                    </div>
+                                    <div className="small fw-bold">
+                                        {selectedEvent.location}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p className="text-muted mb-4">
+                                {selectedEvent.description}
+                            </p>
+                            {/* admin info */}
                             <Row className="mb-4">
                                 <Col md={12}>
                                     <div className="bg-light p-3 rounded-4 d-flex justify-content-around text-center mb-4">
