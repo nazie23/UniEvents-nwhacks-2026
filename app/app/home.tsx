@@ -48,6 +48,23 @@ export default function Home() {
         text: string;
     } | null>(null);
 
+    // Headline rotation: show original, then replace twice, then stop
+    const headlineSequence = [
+        "Discover Amazing Events",
+        "At your ease!",
+        "Try out UniEvents!",
+    ];
+    const [headlineIndex, setHeadlineIndex] = useState(0);
+
+    useEffect(() => {
+        const t1 = setTimeout(() => setHeadlineIndex(1), 4400);
+        const t2 = setTimeout(() => setHeadlineIndex(2), 4400 + 1800);
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+        };
+    }, []);
+
     const supabase = createClient();
 
     useEffect(() => {
@@ -417,6 +434,9 @@ export default function Home() {
                         <h6 className="fw-bold mb-1 text-truncate">
                             {event.name}
                         </h6>
+                        <div className="small text-muted mb-2 text-truncate">
+                            Organiser: {event.organiser_name || event.organizer || "Unknown"}
+                        </div>
                         <div
                             className="text-muted small mb-2"
                             style={{
@@ -675,14 +695,17 @@ export default function Home() {
                     }}
                 ></div>
                 <Container className="py-5 text-center">
-                    <h1 className="display-4 fw-bold mb-3">
-                        Discover Amazing Events
+                    <h1
+                        key={headlineIndex}
+                        className={`display-4 fw-bold mb-3 hero-animate hero-move headline-fade`}
+                    >
+                        {headlineSequence[headlineIndex]}
                     </h1>
-                    <p className="lead mb-4 opacity-75">
+                    <p className="lead mb-4 opacity-100 fw-semibold hero-animate hero-animate-delay">
                         Find tech talks, music festivals, and community
-                        workshops near you.
+                        workshops on campus!
                     </p>
-                    <div className="max-w-600 mx-auto">
+                    <div className="max-w-600 mx-auto hero-animate hero-animate-slower">
                         <Form.Group className="position-relative">
                             <Form.Control
                                 type="text"
@@ -733,27 +756,52 @@ export default function Home() {
                                 <label className="small fw-bold text-muted mb-2 d-block">
                                     CATEGORIES
                                 </label>
-                                {categories.map((cat) => (
-                                    <Form.Check
-                                        key={cat}
-                                        type="checkbox"
-                                        id={`cat-${cat}`}
-                                        label={cat}
-                                        className="mb-2 small fw-medium"
-                                        checked={selectedCategories.includes(
-                                            cat
-                                        )}
-                                        onChange={() =>
-                                            setSelectedCategories((prev) =>
-                                                prev.includes(cat)
-                                                    ? prev.filter(
-                                                          (c) => c !== cat
-                                                      )
-                                                    : [...prev, cat]
-                                            )
-                                        }
-                                    />
-                                ))}
+                                    {/* Desktop: keep checkbox list */}
+                                    <div className="d-none d-lg-block">
+                                        {categories.map((cat) => (
+                                            <Form.Check
+                                                key={cat}
+                                                type="checkbox"
+                                                id={`cat-${cat}`}
+                                                label={cat}
+                                                className="mb-2 small fw-medium"
+                                                checked={selectedCategories.includes(
+                                                    cat
+                                                )}
+                                                onChange={() =>
+                                                    setSelectedCategories((prev) =>
+                                                        prev.includes(cat)
+                                                            ? prev.filter(
+                                                                  (c) => c !== cat
+                                                              )
+                                                            : [...prev, cat]
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {/* Mobile: compact inline checkboxes (keeps checkbox behavior, but more compact than full list) */}
+                                    <div className="d-lg-none d-flex flex-wrap gap-2">
+                                        {categories.map((cat) => (
+                                            <Form.Check
+                                                key={cat}
+                                                inline
+                                                type="checkbox"
+                                                id={`cat-mobile-${cat}`}
+                                                label={cat}
+                                                className="small mb-2"
+                                                checked={selectedCategories.includes(cat)}
+                                                onChange={() =>
+                                                    setSelectedCategories((prev) =>
+                                                        prev.includes(cat)
+                                                            ? prev.filter((c) => c !== cat)
+                                                            : [...prev, cat]
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </div>
                             </div>
 
                             <div>
@@ -885,6 +933,9 @@ export default function Home() {
                                     <h2 className="fw-bold mb-4">
                                         {selectedEvent.name}
                                     </h2>
+                                    <div className="small text-muted mb-3">
+                                        Organiser: {selectedEvent.organiser_name || selectedEvent.organizer || "Unknown"}
+                                    </div>
 
                                     <div className="mb-4">
                                         <div className="d-flex align-items-center mb-2">

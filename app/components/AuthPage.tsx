@@ -9,9 +9,10 @@ import {
     Row,
     Col,
     Alert,
+    Modal,
 } from "react-bootstrap";
-import { createClient } from "@/utils/supabase/client";
-import { Chrome } from "lucide-react";
+import supabase from "@/utils/supabase/client";
+// removed social login UI
 import Link from "next/link";
 
 export default function AuthPage({
@@ -29,7 +30,10 @@ export default function AuthPage({
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
-    const supabase = createClient();
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [resetEmail, setResetEmail] = useState("");
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetMessage, setResetMessage] = useState<string | null>(null);
 
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -68,21 +72,7 @@ export default function AuthPage({
         }
     };
 
-    const handleGoogleLogin = async () => {
-        setLoading(true);
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: "google",
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                },
-            });
-            if (error) throw error;
-        } catch (err: any) {
-            setError(err.message);
-            setLoading(false);
-        }
-    };
+    // social logins removed
 
     return (
         <div
@@ -150,6 +140,12 @@ export default function AuthPage({
                                             <a
                                                 href="#"
                                                 className="small text-decoration-none text-info"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setShowResetModal(true);
+                                                    setResetEmail(email);
+                                                    setResetMessage(null);
+                                                }}
                                             >
                                                 Forgot?
                                             </a>
@@ -181,22 +177,77 @@ export default function AuthPage({
                                 </Button>
                             </Form>
 
-                            <div className="text-center my-3 position-relative">
-                                <hr className="text-muted opacity-25" />
-                                <span className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
-                                    Or continue with
-                                </span>
-                            </div>
-
-                            <Button
-                                variant="outline-dark"
-                                className="w-100 py-2 d-flex align-items-center justify-content-center border-1 fw-bold mb-4"
-                                onClick={handleGoogleLogin}
-                                disabled={loading}
+                            {/* Password reset modal */}
+                            <Modal
+                                show={showResetModal}
+                                onHide={() => setShowResetModal(false)}
+                                centered
                             >
-                                <Chrome size={20} className="me-2" />
-                                Google
-                            </Button>
+                                <Modal.Header closeButton>
+                                    <Modal.Title className="small">
+                                        Reset your password
+                                    </Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body>
+                                    {resetMessage && (
+                                        <Alert
+                                            variant="success"
+                                            className="py-2 small"
+                                        >
+                                            {resetMessage}
+                                        </Alert>
+                                    )}
+                                    <Form
+                                        onSubmit={async (e) => {
+                                            e.preventDefault();
+                                            setResetLoading(true);
+                                            setResetMessage(null);
+                                            try {
+                                                const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+                                                    redirectTo: `${window.location.origin}/reset-password`,
+                                                });
+                                                if (error) throw error;
+                                                setResetMessage(
+                                                    "Check your email for password reset instructions."
+                                                );
+                                            } catch (err: any) {
+                                                setResetMessage(err.message || "Failed to send reset email.");
+                                            } finally {
+                                                setResetLoading(false);
+                                            }
+                                        }}
+                                    >
+                                        <Form.Group className="mb-3">
+                                            <Form.Label className="small fw-bold text-muted">
+                                                Email address
+                                            </Form.Label>
+                                            <Form.Control
+                                                type="email"
+                                                value={resetEmail}
+                                                onChange={(e) =>
+                                                    setResetEmail(e.target.value)
+                                                }
+                                                required
+                                            />
+                                        </Form.Group>
+                                        <div className="d-flex justify-content-end">
+                                            <Button
+                                                variant="secondary"
+                                                className="me-2"
+                                                onClick={() => setShowResetModal(false)}
+                                                disabled={resetLoading}
+                                            >
+                                                Close
+                                            </Button>
+                                            <Button type="submit" variant="info" disabled={resetLoading}>
+                                                {resetLoading ? "Sending..." : "Send reset email"}
+                                            </Button>
+                                        </div>
+                                    </Form>
+                                </Modal.Body>
+                            </Modal>
+
+                            {/* Social sign-in removed */}
 
                             <div className="text-center">
                                 <p className="small text-muted mb-0">

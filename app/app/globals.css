@@ -33,3 +33,48 @@ body {
 ::placeholder {
     opacity: 0.4 !important;
 }
+
+/* Hero headline entrance animation */
+.hero-animate {
+    animation: slideUpFade 700ms cubic-bezier(.16,.84,.44,1) both;
+}
+.hero-animate-delay {
+    animation-delay: 220ms;
+}
+.hero-animate-slower {
+    animation-delay: 360ms;
+}
+
+@keyframes slideUpFade {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Subtle horizontal float motion for the main headline */
+.hero-move {
+    display: inline-block;
+    animation: floatX 6s ease-in-out infinite;
+    will-change: transform;
+}
+
+@keyframes floatX {
+    0% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    100% { transform: translateX(-6px); }
+}
+
+/* Short fade used when headline text is swapped */
+.headline-fade {
+    animation: headlineFade 420ms cubic-bezier(.16,.84,.44,1) both;
+}
+
+@keyframes headlineFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
