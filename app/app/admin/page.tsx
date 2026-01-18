@@ -57,6 +57,7 @@ export default function AdminDashboard() {
         capacity: 50,
         description: "",
         image_url: "",
+        school: "UBC",
         required_profile_fields: ["first_name", "last_name"] as string[],
     });
 
@@ -206,6 +207,7 @@ export default function AdminDashboard() {
                 capacity: 50,
                 description: "",
                 image_url: "",
+                school: "UBC",
                 required_profile_fields: ["first_name", "last_name"],
             });
             fetchEvents(user.id);
@@ -772,6 +774,26 @@ export default function AdminDashboard() {
                 </Modal.Header>
                 <Modal.Body className="pt-3">
                     <Form onSubmit={handleCreateEvent}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted">
+                                University / School
+                            </Form.Label>
+                            <Form.Select
+                                value={newEvent.school}
+                                onChange={(e) =>
+                                    setNewEvent({
+                                        ...newEvent,
+                                        school: e.target.value,
+                                    })
+                                }
+                                className="py-2 bg-light border-0"
+                            >
+                                <option>UBC</option>
+                                <option>SFU</option>
+                                <option>UVic</option>
+                                <option>BCIT</option>
+                            </Form.Select>
+                        </Form.Group>
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3">

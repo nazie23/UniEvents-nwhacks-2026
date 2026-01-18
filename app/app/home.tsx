@@ -37,6 +37,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
+    const [selectedSchool, setSelectedSchool] = useState<string>("UBC");
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [showModal, setShowModal] = useState(false);
     const [signupLoading, setSignupLoading] = useState(false);
@@ -224,6 +225,7 @@ export default function Home() {
     const allTags = Array.from(new Set(events.flatMap((e) => e.tags || [])));
 
     const filteredEvents = events.filter((event) => {
+        const matchesSchool = event.school === selectedSchool;
         const matchesSearch =
             event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             event.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -233,7 +235,7 @@ export default function Home() {
         const matchesTags =
             selectedTags.length === 0 ||
             selectedTags.every((tag) => event.tags?.includes(tag));
-        return matchesSearch && matchesCategory && matchesTags;
+        return matchesSchool && matchesSearch && matchesCategory && matchesTags;
     });
 
     const formatDateTime = (isoString: string) => {
@@ -266,9 +268,45 @@ export default function Home() {
                 className="shadow-sm py-3 sticky-top"
             >
                 <Container>
-                    <Navbar.Brand href="/" className="fw-bold fs-3">
-                        <span style={{ color: "#0dcaf0" }}>Uni</span>Events
-                    </Navbar.Brand>
+                    <div className="navbar-brand fw-bold fs-3 d-flex align-items-center">
+                        <Link
+                            href="/"
+                            className="text-decoration-none text-white"
+                        >
+                            <span style={{ color: "#0dcaf0" }}>Uni</span>Events
+                        </Link>
+                        <div className="ms-3 ps-3 border-start border-secondary border-opacity-25">
+                            <Dropdown
+                                onSelect={(s: any) => setSelectedSchool(s)}
+                            >
+                                <Dropdown.Toggle
+                                    variant="dark"
+                                    id="dropdown-school"
+                                    className="border-0 p-0 fs-6 fw-bold opacity-75 d-flex align-items-center"
+                                >
+                                    <MapPin
+                                        size={16}
+                                        className="me-2 text-info"
+                                    />
+                                    {selectedSchool}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu className="border-0 shadow-lg rounded-4 mt-2">
+                                    <Dropdown.Item eventKey="UBC">
+                                        UBC
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="SFU">
+                                        SFU
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="UVic">
+                                        UVic
+                                    </Dropdown.Item>
+                                    <Dropdown.Item eventKey="BCIT">
+                                        BCIT
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
+                    </div>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse
                         id="basic-navbar-nav"
