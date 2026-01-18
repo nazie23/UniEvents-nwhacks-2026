@@ -436,9 +436,17 @@ export default function AdminDashboard() {
                                         position: "relative",
                                     }}
                                 >
-                                    <div className="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center text-white opacity-25">
-                                        No Image
-                                    </div>
+                                    {event.image_url ? (
+                                        <Card.Img
+                                            variant="top"
+                                            src={event.image_url}
+                                            className="h-100 w-100 object-fit-cover"
+                                        />
+                                    ) : (
+                                        <div className="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center text-white opacity-25">
+                                            No Image
+                                        </div>
+                                    )}
                                     <div className="position-absolute top-0 end-0 p-3 d-flex flex-column gap-2">
                                         {event.is_archived && (
                                             <Badge bg="secondary">
