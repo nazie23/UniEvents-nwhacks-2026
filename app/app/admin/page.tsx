@@ -368,7 +368,7 @@ export default function AdminDashboard() {
             <Container fluid className="px-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 className="fw-bold mb-0">Club Dashboard</h2>
+                        <h2 className="fw-bold mb-0">Admin Dashboard</h2>
                         <p className="text-muted mb-0">
                             Manage your events and attendees
                         </p>

@@ -48,13 +48,14 @@ export default function ProfilePage() {
                 .eq("is_archived", false);
 
             if (data) {
-                const tags = Array.from(new Set(data.flatMap((e: any) => e.tags || [])));
+                const tags = Array.from(
+                    new Set(data.flatMap((e: any) => e.tags || []))
+                );
                 setAllTags(tags);
             }
         };
         fetchTags();
     }, []);
-
 
     useEffect(() => {
         const checkUser = async () => {
@@ -151,20 +152,39 @@ export default function ProfilePage() {
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
             {/* Simple Navbar */}
             <Navbar bg="dark" variant="dark" className="mb-4 shadow-sm py-3">
-                <Container>
-                    <Link
-                        href="/"
-                        className="text-decoration-none d-flex align-items-center text-white"
-                    >
-                        <ArrowLeft size={20} className="me-2" />
-                        <span className="fw-bold">Back to Events</span>
-                    </Link>
+                <Container className="d-flex flex-column flex-md-row align-items-center justify-content-center position-relative">
+                    {/* Logo: Top on mobile, Center on desktop */}
                     <Navbar.Brand
-                        href="#"
-                        className="mx-auto fw-bold fs-3 pe-5"
+                        href="/"
+                        className="fw-bold fs-3 m-0 order-1 mb-2 mb-md-0"
                     >
-                        <span style={{ color: "#0dcaf0" }}>Event</span>Hive
+                        <span style={{ color: "#0dcaf0" }}>Uni</span>Events
                     </Navbar.Brand>
+
+                    {/* Back Button: Bottom on mobile, Left on desktop */}
+                    <div className="order-2 w-100 w-md-auto text-center text-md-start position-md-absolute start-0 ms-md-3">
+                        <Link
+                            href="/"
+                            className="text-decoration-none d-flex align-items-center justify-content-center justify-content-md-start text-white"
+                        >
+                            <ArrowLeft size={20} className="me-2" />
+                            <span className="fw-bold">Back to Events</span>
+                        </Link>
+                    </div>
+
+                    <style>{`
+                        @media (min-width: 768px) {
+                            .navbar-brand {
+                                position: absolute !important;
+                                left: 50% !important;
+                                transform: translateX(-50%) !important;
+                                margin: 0 !important;
+                            }
+                            .position-md-absolute {
+                                position: absolute !important;
+                            }
+                        }
+                    `}</style>
                 </Container>
             </Navbar>
 
@@ -285,17 +305,33 @@ export default function ProfilePage() {
                                         {allTags.map((tag) => (
                                             <span
                                                 key={tag}
-                                                className={`py-2 px-3 rounded-pill cursor-pointer border user-select-none transition ${profile.interests.includes(tag)
-                                                    ? "bg-info text-white border-info"
-                                                    : "bg-light text-muted border-light"
-                                                    }`}
-                                                style={{ cursor: "pointer", fontSize: "0.9rem" }}
+                                                className={`py-2 px-3 rounded-pill cursor-pointer border user-select-none transition ${
+                                                    profile.interests.includes(
+                                                        tag
+                                                    )
+                                                        ? "bg-info text-white border-info"
+                                                        : "bg-light text-muted border-light"
+                                                }`}
+                                                style={{
+                                                    cursor: "pointer",
+                                                    fontSize: "0.9rem",
+                                                }}
                                                 onClick={() =>
                                                     setProfile((prev) => ({
                                                         ...prev,
-                                                        interests: prev.interests.includes(tag)
-                                                            ? prev.interests.filter((t) => t !== tag)
-                                                            : [...prev.interests, tag]
+                                                        interests:
+                                                            prev.interests.includes(
+                                                                tag
+                                                            )
+                                                                ? prev.interests.filter(
+                                                                      (t) =>
+                                                                          t !==
+                                                                          tag
+                                                                  )
+                                                                : [
+                                                                      ...prev.interests,
+                                                                      tag,
+                                                                  ],
                                                     }))
                                                 }
                                             >
