@@ -57,7 +57,7 @@ export default function AdminDashboard() {
         capacity: 50,
         description: "",
         image_url: "",
-        required_profile_fields: [] as string[],
+        required_profile_fields: ["first_name", "last_name"] as string[],
     });
 
     const supabase = createClient();
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
                 capacity: 50,
                 description: "",
                 image_url: "",
-                required_profile_fields: [],
+                required_profile_fields: ["first_name", "last_name"],
             });
             fetchEvents(user.id);
             setMessage({
