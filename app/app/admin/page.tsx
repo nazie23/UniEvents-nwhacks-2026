@@ -348,6 +348,9 @@ export default function AdminDashboard() {
                                     <Dropdown.Item as={Link} href="/profile">
                                         Profile
                                     </Dropdown.Item>
+                                    <Dropdown.Item as={Link} href="/signups">
+                                        My Sign-ups
+                                    </Dropdown.Item>
                                     <Dropdown.Item as={Link} href="/">
                                         Event Homepage
                                     </Dropdown.Item>

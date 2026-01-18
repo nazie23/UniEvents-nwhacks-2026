@@ -551,6 +551,12 @@ export default function Home() {
                                         >
                                             Profile
                                         </Dropdown.Item>
+                                        <Dropdown.Item
+                                            as={Link}
+                                            href="/signups"
+                                        >
+                                            My Sign-ups
+                                        </Dropdown.Item>
                                         <Dropdown.Item as={Link} href="/admin">
                                             Admin Dashboard
                                         </Dropdown.Item>

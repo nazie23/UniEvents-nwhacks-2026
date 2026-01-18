@@ -151,7 +151,7 @@ export default function ProfilePage() {
     return (
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
             {/* Simple Navbar */}
-            <Navbar bg="dark" variant="dark" className="mb-4 shadow-sm py-3">
+            <Navbar bg="dark" variant="dark" className="mb-4 shadow-sm py-4">
                 <Container className="d-flex flex-column flex-md-row align-items-center justify-content-center position-relative">
                     {/* Logo: Top on mobile, Center on desktop */}
                     <Navbar.Brand
