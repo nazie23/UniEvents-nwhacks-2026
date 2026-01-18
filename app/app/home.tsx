@@ -35,6 +35,7 @@ export default function Home() {
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [showModal, setShowModal] = useState(false);
     const [signupLoading, setSignupLoading] = useState(false);
@@ -51,6 +52,14 @@ export default function Home() {
                 data: { user },
             } = await supabase.auth.getUser();
             setUser(user);
+            if (user) {
+                const { data } = await supabase
+                    .from("profiles")
+                    .select("*")
+                    .eq("id", user.id)
+                    .single();
+                setProfile(data);
+            }
             fetchEvents();
         };
         init();
@@ -96,6 +105,31 @@ export default function Home() {
 
         setSignupLoading(true);
         setMessage(null);
+
+        // Check for required profile fields
+        if (
+            event.required_profile_fields &&
+            event.required_profile_fields.length > 0
+        ) {
+            const missingFields = event.required_profile_fields.filter(
+                (field: string) =>
+                    !profile || !profile[field] || profile[field] === ""
+            );
+
+            if (missingFields.length > 0) {
+                setMessage({
+                    type: "danger",
+                    text: `Missing required profile info: ${missingFields
+                        .join(", ")
+                        .replace(
+                            /_/g,
+                            " "
+                        )}. Please update your profile first.`,
+                });
+                setSignupLoading(false);
+                return;
+            }
+        }
 
         const confirmedCount = event.signups.filter(
             (s: any) => s.status === "confirmed"
@@ -603,9 +637,21 @@ export default function Home() {
                                     {message && (
                                         <Alert
                                             variant={message.type}
-                                            className="small py-2 mb-4"
+                                            className="small py-2 mb-4 d-flex align-items-center justify-content-between"
                                         >
-                                            {message.text}
+                                            <div className="me-2">
+                                                {message.text}
+                                            </div>
+                                            {message.text.includes(
+                                                "required profile info"
+                                            ) && (
+                                                <Link
+                                                    href="/profile"
+                                                    className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
+                                                >
+                                                    Update Profile
+                                                </Link>
+                                            )}
                                         </Alert>
                                     )}
 

@@ -56,6 +56,7 @@ export default function AdminDashboard() {
         end_datetime: "",
         capacity: 50,
         description: "",
+        required_profile_fields: [] as string[],
     });
 
     const supabase = createClient();
@@ -198,6 +199,7 @@ export default function AdminDashboard() {
                 end_datetime: "",
                 capacity: 50,
                 description: "",
+                required_profile_fields: [],
             });
             fetchEvents(user.id);
             setMessage({
@@ -209,6 +211,7 @@ export default function AdminDashboard() {
     };
 
     const fetchAttendees = async (eventId: string) => {
+        setAttendees([]); // Clear previous data immediately
         setDetailsLoading(true);
         const { data, error } = await supabase
             .from("signups")
@@ -450,7 +453,14 @@ export default function AdminDashboard() {
             {/* Event Details Modal */}
             <Modal
                 show={showDetails}
-                onHide={() => setShowDetails(false)}
+                onHide={() => {
+                    setShowDetails(false);
+                    // Delay clearing to avoid flicker during closing animation
+                    setTimeout(() => {
+                        setSelectedEvent(null);
+                        setAttendees([]);
+                    }, 300);
+                }}
                 size="lg"
                 centered
                 scrollable
@@ -551,22 +561,20 @@ export default function AdminDashboard() {
                                                         >
                                                             <td>
                                                                 <div className="fw-bold">
-                                                                    {
-                                                                        signup
-                                                                            .profiles
-                                                                            .first_name
-                                                                    }{" "}
-                                                                    {
-                                                                        signup
-                                                                            .profiles
-                                                                            .last_name
-                                                                    }
+                                                                    {signup
+                                                                        .profiles
+                                                                        ?.first_name ||
+                                                                        "Unknown"}{" "}
+                                                                    {signup
+                                                                        .profiles
+                                                                        ?.last_name ||
+                                                                        "User"}
                                                                 </div>
                                                                 <div className="small text-muted">
                                                                     {signup
                                                                         .profiles
-                                                                        .student_number ||
-                                                                        "No ID"}
+                                                                        ?.student_number ||
+                                                                        "No ID / Unfinished Profile"}
                                                                 </div>
                                                             </td>
                                                             <td>
@@ -597,7 +605,7 @@ export default function AdminDashboard() {
                                                                 <span className="text-truncate d-block">
                                                                     {signup
                                                                         .profiles
-                                                                        .dietary_restrictions ||
+                                                                        ?.dietary_restrictions ||
                                                                         "None"}
                                                                 </span>
                                                             </td>
@@ -870,6 +878,56 @@ export default function AdminDashboard() {
                                 className="py-2 bg-light border-0"
                             />
                         </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted">
+                                Required Profile Information
+                            </Form.Label>
+                            <div className="d-flex flex-wrap gap-3 p-3 bg-light rounded-4">
+                                {[
+                                    { id: "first_name", label: "First Name" },
+                                    { id: "last_name", label: "Last Name" },
+                                    {
+                                        id: "student_number",
+                                        label: "Student ID",
+                                    },
+                                    { id: "age", label: "Age" },
+                                    {
+                                        id: "dietary_restrictions",
+                                        label: "Dietary Info",
+                                    },
+                                ].map((field) => (
+                                    <Form.Check
+                                        key={field.id}
+                                        type="checkbox"
+                                        id={`req-${field.id}`}
+                                        label={field.label}
+                                        checked={newEvent.required_profile_fields.includes(
+                                            field.id
+                                        )}
+                                        onChange={(e) => {
+                                            const fields = e.target.checked
+                                                ? [
+                                                      ...newEvent.required_profile_fields,
+                                                      field.id,
+                                                  ]
+                                                : newEvent.required_profile_fields.filter(
+                                                      (f) => f !== field.id
+                                                  );
+                                            setNewEvent({
+                                                ...newEvent,
+                                                required_profile_fields: fields,
+                                            });
+                                        }}
+                                        className="small fw-bold text-muted"
+                                    />
+                                ))}
+                            </div>
+                            <Form.Text className="text-muted small">
+                                Users will be prompted to complete these fields
+                                in their profile before they can sign up.
+                            </Form.Text>
+                        </Form.Group>
+
                         <Form.Group className="mb-4">
                             <Form.Label className="small fw-bold text-muted">
                                 Description
