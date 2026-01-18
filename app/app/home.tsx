@@ -267,7 +267,7 @@ export default function Home() {
             >
                 <Container>
                     <Navbar.Brand href="/" className="fw-bold fs-3">
-                        <span style={{ color: "#0dcaf0" }}>Event</span>Hive
+                        <span style={{ color: "#0dcaf0" }}>Uni</span>Events
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse

@@ -1,4 +1,4 @@
-# EventHive - Event Platform
+# UniEvents - Event Platform
 
 A modern event discovery and management platform built with Next.js, React Bootstrap, and Supabase.
 

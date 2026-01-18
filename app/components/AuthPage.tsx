@@ -91,9 +91,9 @@ export default function AuthPage({
                             <div className="text-center mb-4">
                                 <h1 className="fw-bold fs-2 mb-2">
                                     <span style={{ color: "#0dcaf0" }}>
-                                        Event
+                                        Uni
                                     </span>
-                                    Hive
+                                    Events
                                 </h1>
                                 <p className="text-muted">
                                     {view === "login"

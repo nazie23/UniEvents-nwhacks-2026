@@ -308,7 +308,7 @@ export default function AdminDashboard() {
             >
                 <Container fluid className="px-4">
                     <Navbar.Brand href="/" className="fw-bold fs-3">
-                        <span style={{ color: "#0dcaf0" }}>Event</span>Hive
+                        <span style={{ color: "#0dcaf0" }}>Uni</span>Events
                         <Badge bg="info" className="ms-2 fs-6 align-middle">
                             Admin
                         </Badge>
