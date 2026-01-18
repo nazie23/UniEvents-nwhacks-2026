@@ -56,6 +56,7 @@ export default function AdminDashboard() {
         end_datetime: "",
         capacity: 50,
         description: "",
+        image_url: "",
         required_profile_fields: [] as string[],
     });
 
@@ -204,6 +205,7 @@ export default function AdminDashboard() {
                 end_datetime: "",
                 capacity: 50,
                 description: "",
+                image_url: "",
                 required_profile_fields: [],
             });
             fetchEvents(user.id);
@@ -898,6 +900,23 @@ export default function AdminDashboard() {
                                 </Form.Group>
                             </Col>
                         </Row>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="small fw-bold text-muted">
+                                Image URL
+                            </Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={newEvent.image_url}
+                                onChange={(e) =>
+                                    setNewEvent({
+                                        ...newEvent,
+                                        image_url: e.target.value,
+                                    })
+                                }
+                                placeholder="https://example.com/image.jpg"
+                                className="py-2 bg-light border-0"
+                            />
+                        </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold text-muted">
                                 Tags (comma separated)
