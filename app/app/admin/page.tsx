@@ -31,7 +31,12 @@ import {
     Clock,
     XCircle,
     ArrowUpCircle,
+    Share,
+    Download,
+    Copy,
+    Check,
 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function AdminDashboard() {
     const [user, setUser] = useState<any>(null);
@@ -61,6 +66,8 @@ export default function AdminDashboard() {
         school: "UBC",
         required_profile_fields: ["first_name", "last_name"] as string[],
     });
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [copySuccess, setCopySuccess] = useState(false);
 
     const supabase = createClient();
 
@@ -986,6 +993,13 @@ export default function AdminDashboard() {
                                     <Trash2 size={18} className="me-2" /> Delete
                                 </Button>
                             </div>
+                            <Button
+                                variant="info"
+                                className="text-white d-flex align-items-center"
+                                onClick={() => setShowShareModal(true)}
+                            >
+                                <Share size={18} className="me-2" /> Share
+                            </Button>
                             <div className="d-flex gap-2">
                                 <Button
                                     variant={
@@ -1021,6 +1035,99 @@ export default function AdminDashboard() {
                         </Modal.Footer>
                     </>
                 )}
+            </Modal>
+
+            {/* Share Modal */}
+            <Modal
+                show={showShareModal}
+                onHide={() => {
+                    setShowShareModal(false);
+                    setCopySuccess(false);
+                }}
+                centered
+                size="sm"
+                className="share-modal"
+            >
+                <Modal.Header closeButton className="border-0 pb-0">
+                    <Modal.Title className="fw-bold fs-5">
+                        Share Event
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center pt-3">
+                    {selectedEvent && (
+                        <>
+                            <div className="bg-white p-3 rounded-4 shadow-sm mb-4 d-inline-block border">
+                                <QRCodeCanvas
+                                    id="event-qr-code"
+                                    value={`${
+                                        typeof window !== "undefined"
+                                            ? window.location.origin
+                                            : ""
+                                    }/?event=${selectedEvent.id}`}
+                                    size={200}
+                                    level="H"
+                                    includeMargin={true}
+                                />
+                            </div>
+
+                            <div className="d-grid gap-2 mb-4">
+                                <Button
+                                    variant="outline-info"
+                                    className="rounded-pill d-flex align-items-center justify-content-center py-2"
+                                    onClick={() => {
+                                        const canvas = document.getElementById(
+                                            "event-qr-code"
+                                        ) as HTMLCanvasElement;
+                                        if (canvas) {
+                                            const url =
+                                                canvas.toDataURL("image/png");
+                                            const link =
+                                                document.createElement("a");
+                                            link.download = `${selectedEvent.name
+                                                .replace(/\s+/g, "-")
+                                                .toLowerCase()}-qr.png`;
+                                            link.href = url;
+                                            link.click();
+                                        }
+                                    }}
+                                >
+                                    <Download size={18} className="me-2" />{" "}
+                                    Download QR
+                                </Button>
+                            </div>
+
+                            <div className="bg-light p-2 rounded-4 d-flex align-items-center border">
+                                <div className="text-truncate small flex-grow-1 px-2 text-muted">
+                                    {`${
+                                        typeof window !== "undefined"
+                                            ? window.location.origin
+                                            : ""
+                                    }/?event=${selectedEvent.id}`}
+                                </div>
+                                <Button
+                                    variant={copySuccess ? "success" : "info"}
+                                    size="sm"
+                                    className="text-white rounded-pill px-3"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/?event=${selectedEvent.id}`;
+                                        navigator.clipboard.writeText(url);
+                                        setCopySuccess(true);
+                                        setTimeout(
+                                            () => setCopySuccess(false),
+                                            2000
+                                        );
+                                    }}
+                                >
+                                    {copySuccess ? (
+                                        <Check size={16} />
+                                    ) : (
+                                        <Copy size={16} />
+                                    )}
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </Modal.Body>
             </Modal>
 
             {/* Create Event Modal */}

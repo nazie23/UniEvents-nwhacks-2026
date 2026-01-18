@@ -27,7 +27,12 @@ import {
     ChevronRight,
     CheckCircle2,
     RotateCcw,
+    Share,
+    Download,
+    Copy,
+    Check,
 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function Home() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +52,8 @@ export default function Home() {
         type: string;
         text: string;
     } | null>(null);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [copySuccess, setCopySuccess] = useState(false);
 
     // Headline rotation: show original, then replace twice, then stop
     const headlineSequence = [
@@ -310,6 +317,24 @@ export default function Home() {
         }
     };
 
+    // Handle shared event link
+    useEffect(() => {
+        if (events.length > 0) {
+            const params = new URLSearchParams(window.location.search);
+            const eventId = params.get("event");
+            if (eventId) {
+                const event = events.find((e) => e.id === eventId);
+                if (event) {
+                    setSelectedEvent(event);
+                    setShowModal(true);
+                    // Clear the param from URL
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, "", newUrl);
+                }
+            }
+        }
+    }, [events]);
+
     const schoolEvents = events.filter((e) => e.school === selectedSchool);
     const categories = Array.from(new Set(schoolEvents.map((e) => e.category)));
     const allTags = Array.from(
@@ -435,7 +460,10 @@ export default function Home() {
                             {event.name}
                         </h6>
                         <div className="small text-muted mb-2 text-truncate">
-                            Organiser: {event.organiser_name || event.organizer || "Unknown"}
+                            Organiser:{" "}
+                            {event.organiser_name ||
+                                event.organizer ||
+                                "Unknown"}
                         </div>
                         <div
                             className="text-muted small mb-2"
@@ -756,52 +784,56 @@ export default function Home() {
                                 <label className="small fw-bold text-muted mb-2 d-block">
                                     CATEGORIES
                                 </label>
-                                    {/* Desktop: keep checkbox list */}
-                                    <div className="d-none d-lg-block">
-                                        {categories.map((cat) => (
-                                            <Form.Check
-                                                key={cat}
-                                                type="checkbox"
-                                                id={`cat-${cat}`}
-                                                label={cat}
-                                                className="mb-2 small fw-medium"
-                                                checked={selectedCategories.includes(
-                                                    cat
-                                                )}
-                                                onChange={() =>
-                                                    setSelectedCategories((prev) =>
-                                                        prev.includes(cat)
-                                                            ? prev.filter(
-                                                                  (c) => c !== cat
-                                                              )
-                                                            : [...prev, cat]
-                                                    )
-                                                }
-                                            />
-                                        ))}
-                                    </div>
+                                {/* Desktop: keep checkbox list */}
+                                <div className="d-none d-lg-block">
+                                    {categories.map((cat) => (
+                                        <Form.Check
+                                            key={cat}
+                                            type="checkbox"
+                                            id={`cat-${cat}`}
+                                            label={cat}
+                                            className="mb-2 small fw-medium"
+                                            checked={selectedCategories.includes(
+                                                cat
+                                            )}
+                                            onChange={() =>
+                                                setSelectedCategories((prev) =>
+                                                    prev.includes(cat)
+                                                        ? prev.filter(
+                                                              (c) => c !== cat
+                                                          )
+                                                        : [...prev, cat]
+                                                )
+                                            }
+                                        />
+                                    ))}
+                                </div>
 
-                                    {/* Mobile: compact inline checkboxes (keeps checkbox behavior, but more compact than full list) */}
-                                    <div className="d-lg-none d-flex flex-wrap gap-2">
-                                        {categories.map((cat) => (
-                                            <Form.Check
-                                                key={cat}
-                                                inline
-                                                type="checkbox"
-                                                id={`cat-mobile-${cat}`}
-                                                label={cat}
-                                                className="small mb-2"
-                                                checked={selectedCategories.includes(cat)}
-                                                onChange={() =>
-                                                    setSelectedCategories((prev) =>
-                                                        prev.includes(cat)
-                                                            ? prev.filter((c) => c !== cat)
-                                                            : [...prev, cat]
-                                                    )
-                                                }
-                                            />
-                                        ))}
-                                    </div>
+                                {/* Mobile: compact inline checkboxes (keeps checkbox behavior, but more compact than full list) */}
+                                <div className="d-lg-none d-flex flex-wrap gap-2">
+                                    {categories.map((cat) => (
+                                        <Form.Check
+                                            key={cat}
+                                            inline
+                                            type="checkbox"
+                                            id={`cat-mobile-${cat}`}
+                                            label={cat}
+                                            className="small mb-2"
+                                            checked={selectedCategories.includes(
+                                                cat
+                                            )}
+                                            onChange={() =>
+                                                setSelectedCategories((prev) =>
+                                                    prev.includes(cat)
+                                                        ? prev.filter(
+                                                              (c) => c !== cat
+                                                          )
+                                                        : [...prev, cat]
+                                                )
+                                            }
+                                        />
+                                    ))}
+                                </div>
                             </div>
 
                             <div>
@@ -934,7 +966,10 @@ export default function Home() {
                                         {selectedEvent.name}
                                     </h2>
                                     <div className="small text-muted mb-3">
-                                        Organiser: {selectedEvent.organiser_name || selectedEvent.organizer || "Unknown"}
+                                        Organiser:{" "}
+                                        {selectedEvent.organiser_name ||
+                                            selectedEvent.organizer ||
+                                            "Unknown"}
                                     </div>
 
                                     <div className="mb-4">
@@ -997,63 +1032,81 @@ export default function Home() {
                                         </Alert>
                                     )}
 
-                                    <div className="d-grid">
-                                        {selectedEvent.signups.some(
-                                            (s: any) => s.user_id === user?.id
-                                        ) ? (
-                                            <Button
-                                                variant="outline-danger"
-                                                className="py-3 fw-bold rounded-4 shadow-sm"
-                                                onClick={() =>
-                                                    handleCancelSignup(
-                                                        selectedEvent
-                                                    )
-                                                }
-                                                disabled={signupLoading}
-                                            >
-                                                {signupLoading ? (
-                                                    <Spinner
-                                                        animation="border"
-                                                        size="sm"
-                                                    />
-                                                ) : (
-                                                    "Cancel Signup"
-                                                )}
-                                            </Button>
-                                        ) : selectedEvent.is_locked ? (
-                                            <Button
-                                                variant="secondary"
-                                                className="py-3 fw-bold rounded-4 shadow-sm"
-                                                disabled
-                                            >
-                                                Registration Locked
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                variant="info"
-                                                className="py-3 text-white fw-bold rounded-4 shadow-sm"
-                                                onClick={() =>
-                                                    handleSignup(selectedEvent)
-                                                }
-                                                disabled={signupLoading}
-                                            >
-                                                {signupLoading ? (
-                                                    <Spinner
-                                                        animation="border"
-                                                        size="sm"
-                                                    />
-                                                ) : selectedEvent.signups.filter(
-                                                      (s: any) =>
-                                                          s.status ===
-                                                          "confirmed"
-                                                  ).length <
-                                                  selectedEvent.capacity ? (
-                                                    "Signup Now"
-                                                ) : (
-                                                    "Join Waitlist"
-                                                )}
-                                            </Button>
-                                        )}
+                                    <div className="d-flex gap-2">
+                                        <div className="flex-grow-1 d-grid">
+                                            {selectedEvent.signups.some(
+                                                (s: any) =>
+                                                    s.user_id === user?.id
+                                            ) ? (
+                                                <Button
+                                                    variant="outline-danger"
+                                                    className="py-3 fw-bold rounded-4 shadow-sm"
+                                                    onClick={() =>
+                                                        handleCancelSignup(
+                                                            selectedEvent
+                                                        )
+                                                    }
+                                                    disabled={signupLoading}
+                                                >
+                                                    {signupLoading ? (
+                                                        <Spinner
+                                                            animation="border"
+                                                            size="sm"
+                                                        />
+                                                    ) : (
+                                                        "Cancel Signup"
+                                                    )}
+                                                </Button>
+                                            ) : selectedEvent.is_locked ? (
+                                                <Button
+                                                    variant="secondary"
+                                                    className="py-3 fw-bold rounded-4 shadow-sm"
+                                                    disabled
+                                                >
+                                                    Registration Locked
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="info"
+                                                    className="py-3 text-white fw-bold rounded-4 shadow-sm"
+                                                    onClick={() =>
+                                                        handleSignup(
+                                                            selectedEvent
+                                                        )
+                                                    }
+                                                    disabled={signupLoading}
+                                                >
+                                                    {signupLoading ? (
+                                                        <Spinner
+                                                            animation="border"
+                                                            size="sm"
+                                                        />
+                                                    ) : selectedEvent.signups.filter(
+                                                          (s: any) =>
+                                                              s.status ===
+                                                              "confirmed"
+                                                      ).length <
+                                                      selectedEvent.capacity ? (
+                                                        "Signup Now"
+                                                    ) : (
+                                                        "Join Waitlist"
+                                                    )}
+                                                </Button>
+                                            )}
+                                        </div>
+                                        <Button
+                                            variant="outline-info"
+                                            className="p-3 rounded-4 d-flex align-items-center justify-content-center border-2"
+                                            onClick={() =>
+                                                setShowShareModal(true)
+                                            }
+                                            style={{
+                                                width: "60px",
+                                                height: "100%",
+                                            }}
+                                        >
+                                            <Share size={24} />
+                                        </Button>
                                     </div>
                                 </Col>
                             </Row>
@@ -1142,6 +1195,100 @@ export default function Home() {
                             Skip for now
                         </Button>
                     </div>
+                </Modal.Body>
+            </Modal>
+
+            {/* Share Modal */}
+            <Modal
+                show={showShareModal}
+                onHide={() => {
+                    setShowShareModal(false);
+                    setCopySuccess(false);
+                }}
+                centered
+                size="sm"
+                contentClassName="rounded-4"
+                style={{ zIndex: 1060 }}
+            >
+                <Modal.Header closeButton className="border-0 pb-0">
+                    <Modal.Title className="fw-bold fs-5">
+                        Share Event
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center pt-3 p-4">
+                    {selectedEvent && (
+                        <>
+                            <div className="bg-white p-3 rounded-4 shadow-sm mb-4 d-inline-block border">
+                                <QRCodeCanvas
+                                    id="event-page-qr"
+                                    value={`${
+                                        typeof window !== "undefined"
+                                            ? window.location.origin
+                                            : ""
+                                    }/?event=${selectedEvent.id}`}
+                                    size={200}
+                                    level="H"
+                                    includeMargin={true}
+                                />
+                            </div>
+
+                            <div className="d-grid gap-2 mb-4">
+                                <Button
+                                    variant="outline-info"
+                                    className="rounded-pill d-flex align-items-center justify-content-center py-2 fw-medium"
+                                    onClick={() => {
+                                        const canvas = document.getElementById(
+                                            "event-page-qr"
+                                        ) as HTMLCanvasElement;
+                                        if (canvas) {
+                                            const url =
+                                                canvas.toDataURL("image/png");
+                                            const link =
+                                                document.createElement("a");
+                                            link.download = `${selectedEvent.name
+                                                .replace(/\s+/g, "-")
+                                                .toLowerCase()}-qr.png`;
+                                            link.href = url;
+                                            link.click();
+                                        }
+                                    }}
+                                >
+                                    <Download size={18} className="me-2" />{" "}
+                                    Download QR
+                                </Button>
+                            </div>
+
+                            <div className="bg-light p-2 rounded-4 d-flex align-items-center border">
+                                <div className="text-truncate small flex-grow-1 px-2 text-muted">
+                                    {`${
+                                        typeof window !== "undefined"
+                                            ? window.location.origin
+                                            : ""
+                                    }/?event=${selectedEvent.id}`}
+                                </div>
+                                <Button
+                                    variant={copySuccess ? "success" : "info"}
+                                    size="sm"
+                                    className="text-white rounded-pill px-3 shadow-sm"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/?event=${selectedEvent.id}`;
+                                        navigator.clipboard.writeText(url);
+                                        setCopySuccess(true);
+                                        setTimeout(
+                                            () => setCopySuccess(false),
+                                            2000
+                                        );
+                                    }}
+                                >
+                                    {copySuccess ? (
+                                        <Check size={16} />
+                                    ) : (
+                                        <Copy size={16} />
+                                    )}
+                                </Button>
+                            </div>
+                        </>
+                    )}
                 </Modal.Body>
             </Modal>
         </div>
