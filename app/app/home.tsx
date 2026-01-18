@@ -626,7 +626,12 @@ export default function Home() {
                     <Col lg={2} className="mb-4">
                         <Card
                             className="border-0 shadow-sm rounded-4 p-3 sticky-top"
-                            style={{ top: "100px", zIndex: 10 }}
+                            style={{
+                                top: "100px",
+                                zIndex: 10,
+                                maxHeight: "calc(100vh - 120px)",
+                                overflowY: "auto",
+                            }}
                         >
                             <div className="d-flex justify-content-between align-items-center mb-4">
                                 <h5 className="fw-bold mb-0">Filters</h5>
@@ -954,8 +959,8 @@ export default function Home() {
                                         : "light"
                                 }
                                 className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${interestTags.includes(tag)
-                                        ? "text-white"
-                                        : "text-muted"
+                                    ? "text-white"
+                                    : "text-muted"
                                     }`}
                                 style={{ cursor: "pointer", fontSize: "1rem" }}
                                 onClick={() =>
