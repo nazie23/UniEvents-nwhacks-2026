@@ -286,10 +286,6 @@ export default function SignupsPage() {
                     ))}
                     {filteredEvents.length === 0 && (
                         <Col className="text-center py-5">
-                            <History
-                                size={48}
-                                className="text-muted opacity-25 mb-3"
-                            />
                             <h4 className="text-muted">No sign-ups found</h4>
                             <p className="text-muted px-5">
                                 {showExpired
