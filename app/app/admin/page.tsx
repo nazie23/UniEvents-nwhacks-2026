@@ -76,6 +76,11 @@ export default function AdminDashboard() {
         checkAuth();
     }, []);
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        window.location.href = "/admin/login";
+    };
+
     const fetchEvents = async (userId: string) => {
         setLoading(true);
         const { data, error } = await supabase
@@ -299,27 +304,59 @@ export default function AdminDashboard() {
                 bg="dark"
                 variant="dark"
                 expand="lg"
-                className="mb-4 shadow-sm py-3"
+                className="shadow-sm py-3 mb-4 sticky-top"
             >
-                <Container fluid>
+                <Container fluid className="px-4">
                     <Navbar.Brand href="/" className="fw-bold fs-3">
-                        <span style={{ color: "#0dcaf0" }}>Event</span>Hive{" "}
-                        <Badge bg="info" className="ms-2 fs-6">
+                        <span style={{ color: "#0dcaf0" }}>Event</span>Hive
+                        <Badge bg="info" className="ms-2 fs-6 align-middle">
                             Admin
                         </Badge>
                     </Navbar.Brand>
-                    <div className="d-flex align-items-center">
-                        <span className="text-white me-3 d-none d-md-inline small opacity-75">
-                            {user?.email}
-                        </span>
-                        <Button
-                            variant="outline-light"
-                            size="sm"
-                            onClick={() => supabase.auth.signOut()}
-                        >
-                            Logout
-                        </Button>
-                    </div>
+                    <Navbar.Toggle aria-controls="admin-navbar-nav" />
+                    <Navbar.Collapse
+                        id="admin-navbar-nav"
+                        className="justify-content-end"
+                    >
+                        <div className="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                            <Dropdown align="end">
+                                <Dropdown.Toggle
+                                    variant="outline-info"
+                                    id="dropdown-user"
+                                    className="d-flex align-items-center rounded-pill px-3"
+                                >
+                                    <div
+                                        className="me-2 rounded-circle bg-info d-flex align-items-center justify-content-center text-white"
+                                        style={{
+                                            width: "24px",
+                                            height: "24px",
+                                            fontSize: "10px",
+                                        }}
+                                    >
+                                        {user?.email?.[0].toUpperCase()}
+                                    </div>
+                                    <span className="small">
+                                        {user?.email?.split("@")[0]}
+                                    </span>
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu className="border-0 shadow-sm rounded-4 mt-2">
+                                    <Dropdown.Item as={Link} href="/profile">
+                                        Profile
+                                    </Dropdown.Item>
+                                    <Dropdown.Item as={Link} href="/">
+                                        Event Homepage
+                                    </Dropdown.Item>
+                                    <Dropdown.Divider />
+                                    <Dropdown.Item
+                                        onClick={handleLogout}
+                                        className="text-danger"
+                                    >
+                                        Logout
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>
+                    </Navbar.Collapse>
                 </Container>
             </Navbar>
 
