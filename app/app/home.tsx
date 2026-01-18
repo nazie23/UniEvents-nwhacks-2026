@@ -247,13 +247,21 @@ export default function Home() {
 
             if (error) throw error;
 
-            // Optional: update local profile if we were tracking it closely, 
+            // Optional: update local profile if we were tracking it closely,
             // but for home page filtering we might want to reload or just close modal.
             setShowInterestsModal(false);
-            setMessage({ type: "success", text: "Interests saved successfully!" });
+            setMessage({
+                type: "success",
+                text: "Interests saved successfully!",
+            });
         } catch (error: any) {
             console.error("Error saving interests:", error);
-            setMessage({ type: "danger", text: `Failed to save interests: ${error?.message || "Unknown error"}` });
+            setMessage({
+                type: "danger",
+                text: `Failed to save interests: ${
+                    error?.message || "Unknown error"
+                }`,
+            });
         } finally {
             setInterestSaving(false);
         }
@@ -304,6 +312,7 @@ export default function Home() {
                 variant="dark"
                 expand="lg"
                 className="shadow-sm py-3 sticky-top"
+                style={{ zIndex: 1030 }}
             >
                 <Container>
                     <div className="navbar-brand fw-bold fs-3 d-flex align-items-center">
@@ -454,22 +463,22 @@ export default function Home() {
                     <Col lg={2} className="mb-4">
                         <Card
                             className="border-0 shadow-sm rounded-4 p-3 sticky-top"
-                            style={{ top: "100px" }}
+                            style={{ top: "100px", zIndex: 10 }}
                         >
                             <div className="d-flex justify-content-between align-items-center mb-4">
                                 <h5 className="fw-bold mb-0">Filters</h5>
                                 {(searchTerm ||
                                     selectedCategories.length > 0 ||
                                     selectedTags.length > 0) && (
-                                        <Button
-                                            variant="link"
-                                            className="p-0 text-muted small text-decoration-none d-flex align-items-center"
-                                            onClick={handleClearFilters}
-                                        >
-                                            <RotateCcw size={14} className="me-1" />{" "}
-                                            Clear All
-                                        </Button>
-                                    )}
+                                    <Button
+                                        variant="link"
+                                        className="p-0 text-muted small text-decoration-none d-flex align-items-center"
+                                        onClick={handleClearFilters}
+                                    >
+                                        <RotateCcw size={14} className="me-1" />{" "}
+                                        Clear All
+                                    </Button>
+                                )}
                             </div>
 
                             <div className="mb-4">
@@ -490,8 +499,8 @@ export default function Home() {
                                             setSelectedCategories((prev) =>
                                                 prev.includes(cat)
                                                     ? prev.filter(
-                                                        (c) => c !== cat
-                                                    )
+                                                          (c) => c !== cat
+                                                      )
                                                     : [...prev, cat]
                                             )
                                         }
@@ -525,8 +534,8 @@ export default function Home() {
                                                 setSelectedTags((prev) =>
                                                     prev.includes(tag)
                                                         ? prev.filter(
-                                                            (t) => t !== tag
-                                                        )
+                                                              (t) => t !== tag
+                                                          )
                                                         : [...prev, tag]
                                                 )
                                             }
@@ -646,7 +655,7 @@ export default function Home() {
                                                         <Badge
                                                             bg={
                                                                 userStatus ===
-                                                                    "confirmed"
+                                                                "confirmed"
                                                                     ? "success"
                                                                     : "warning"
                                                             }
@@ -657,7 +666,7 @@ export default function Home() {
                                                                 className="me-1"
                                                             />
                                                             {userStatus ===
-                                                                "confirmed"
+                                                            "confirmed"
                                                                 ? "Registered"
                                                                 : "Waitlisted"}
                                                         </Badge>
@@ -808,13 +817,13 @@ export default function Home() {
                                             {message.text.includes(
                                                 "required profile info"
                                             ) && (
-                                                    <Link
-                                                        href="/profile"
-                                                        className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
-                                                    >
-                                                        Update Profile
-                                                    </Link>
-                                                )}
+                                                <Link
+                                                    href="/profile"
+                                                    className="btn btn-sm btn-danger fw-bold rounded-pill px-3 text-nowrap"
+                                                >
+                                                    Update Profile
+                                                </Link>
+                                            )}
                                         </Alert>
                                     )}
 
@@ -864,11 +873,11 @@ export default function Home() {
                                                         size="sm"
                                                     />
                                                 ) : selectedEvent.signups.filter(
-                                                    (s: any) =>
-                                                        s.status ===
-                                                        "confirmed"
-                                                ).length <
-                                                    selectedEvent.capacity ? (
+                                                      (s: any) =>
+                                                          s.status ===
+                                                          "confirmed"
+                                                  ).length <
+                                                  selectedEvent.capacity ? (
                                                     "Signup Now"
                                                 ) : (
                                                     "Join Waitlist"
@@ -893,18 +902,29 @@ export default function Home() {
                 keyboard={false}
             >
                 <Modal.Body className="p-5 text-center">
-                    <h2 className="fw-bold mb-3">Welcome to <span className="text-info">Uni</span>Events!</h2>
+                    <h2 className="fw-bold mb-3">
+                        Welcome to <span className="text-info">Uni</span>Events!
+                    </h2>
                     <p className="text-muted mb-4 lead">
-                        Let's personalize your experience. Pick some topics you're interested in, and we'll help you find the best events.
+                        Let's personalize your experience. Pick some topics
+                        you're interested in, and we'll help you find the best
+                        events.
                     </p>
 
                     <div className="d-flex flex-wrap justify-content-center gap-2 mb-5">
                         {allTags.map((tag) => (
                             <Badge
                                 key={tag}
-                                bg={interestTags.includes(tag) ? "info" : "light"}
-                                className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${interestTags.includes(tag) ? "text-white" : "text-muted"
-                                    }`}
+                                bg={
+                                    interestTags.includes(tag)
+                                        ? "info"
+                                        : "light"
+                                }
+                                className={`py-3 px-4 rounded-pill cursor-pointer border user-select-none transition ${
+                                    interestTags.includes(tag)
+                                        ? "text-white"
+                                        : "text-muted"
+                                }`}
                                 style={{ cursor: "pointer", fontSize: "1rem" }}
                                 onClick={() =>
                                     setInterestTags((prev) =>
@@ -914,7 +934,9 @@ export default function Home() {
                                     )
                                 }
                             >
-                                {interestTags.includes(tag) && <CheckCircle2 size={16} className="me-2" />}
+                                {interestTags.includes(tag) && (
+                                    <CheckCircle2 size={16} className="me-2" />
+                                )}
                                 #{tag}
                             </Badge>
                         ))}
@@ -930,7 +952,11 @@ export default function Home() {
                         >
                             {interestSaving ? (
                                 <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
+                                    <Spinner
+                                        animation="border"
+                                        size="sm"
+                                        className="me-2"
+                                    />
                                     Saving...
                                 </>
                             ) : (
